@@ -1,0 +1,117 @@
+@import "tailwindcss";
+@import "@fontsource/barlow/400.css";
+@import "@fontsource/barlow/500.css";
+@import "@fontsource/barlow/600.css";
+@import "@fontsource/barlow-semi-condensed/500.css";
+@import "@fontsource/barlow-semi-condensed/600.css";
+
+/* Control-room tokens. Status colours carry meaning only (always with an icon + label).
+   Chart series colours were validated for colour-vision deficiency on the panel surface. */
+@theme {
+  --font-sans: "Barlow", system-ui, "Segoe UI", sans-serif;
+  --font-cond: "Barlow Semi Condensed", "Barlow", system-ui, sans-serif;
+
+  --color-plane: #0a1220;
+  --color-panel: #0f1a2b;
+  --color-raised: #15233a;
+  --color-hair: #22324b;
+  --color-hair-strong: #2e4262;
+  --color-ink: #e6edf7;
+  --color-ink-2: #a9b8cc;
+  --color-ink-3: #7487a3;
+
+  --color-flow: #4c9dff;
+  --color-series-1: #3987e5;
+  --color-series-2: #d95926;
+  --color-series-3: #199e70;
+  --color-ref: #8a9bb4;
+
+  --color-ok: #2fbf71;
+  --color-warn: #f5a524;
+  --color-alert: #f04848;
+  --color-truth: #d95926;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-plane);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-flow);
+  outline-offset: 2px;
+}
+
+/* React Flow chrome tuned to the control-room palette */
+.react-flow__controls {
+  box-shadow: none !important;
+  border: 1px solid var(--color-hair);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.react-flow__controls-button {
+  background: var(--color-panel) !important;
+  border-bottom: 1px solid var(--color-hair) !important;
+  fill: var(--color-ink-2) !important;
+}
+.react-flow__controls-button:hover {
+  background: var(--color-raised) !important;
+}
+.react-flow__minimap {
+  background: var(--color-panel) !important;
+  border: 1px solid var(--color-hair);
+  border-radius: 6px;
+}
+.react-flow__attribution {
+  background: transparent !important;
+}
+.react-flow__attribution a {
+  color: var(--color-ink-3) !important;
+}
+
+/* Recharts text */
+.recharts-cartesian-axis-tick-value {
+  fill: var(--color-ink-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.recharts-legend-item-text {
+  color: var(--color-ink-2) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-particle {
+    display: none;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-hair-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
