@@ -1,0 +1,12 @@
+# Not verified in the development environment (Docker unavailable); see README.
+services:
+  gridwatch:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - gridwatch-data:/app/data
+      - gridwatch-models:/app/backend/artifacts
+volumes:
+  gridwatch-data:
+  gridwatch-models:
