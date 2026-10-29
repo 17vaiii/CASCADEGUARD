@@ -1,1 +1,21 @@
 # OWNER: P2 | STATUS: LOCKED (until P1 handoff done)
+
+name: P1 tasks updated - Cloud base ready
+
+on:
+  push:
+    branches:
+      - vm1
+  pull_request:
+    branches:
+      - vm1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Confirm workflow runs
+        run: echo "GitHub Actions workflow started successfully"
