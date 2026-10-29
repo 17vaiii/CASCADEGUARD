@@ -188,3 +188,11 @@ cascadeguard-sharavathi/
 ├── pyproject.toml                                 # P2 (Python packaging configuration)
 └── requirements.txt                               # P2 (Core dependencies)
 ```
+
+## Imported working demo application
+
+The previously developed full-stack demonstration is now stored in `theft_detection/` to match this repository's existing module layout. It includes the corridor simulator, theft ML models and checkpoints, FastAPI backend, React frontend, RAG resources, tests, documentation, and generated datasets. Its local run instructions are in [theft_detection/README.md](theft_detection/README.md).
+
+The ten original design notes are preserved under `docs/specifications/`. The root `src/cascadeguard/` package remains the role-based project implementation area; the imported demo is a self-contained application module and has not yet been refactored into that package.
+
+Dependency folders and machine-specific files (`.venv`, `node_modules`, caches, `.env`, and runtime logs) are intentionally not copied. Install dependencies from `theft_detection/requirements.txt` and `theft_detection/frontend/package-lock.json` when setting up a fresh machine.

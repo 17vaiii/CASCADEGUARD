@@ -1,0 +1,35 @@
+INFO:     Started server process [19004]
+INFO:     Waiting for application startup.
+Failed to import plotly - interactive plotting will not be available
+{"event": "startup", "ms": 46764, "models": {"baseline_detector": true, "xgb_classifier": true, "localizer_reg": true, "localizer_rank": true, "gnn": true}}
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+{"request_id": "dda3adaaf039", "method": "GET", "path": "/docs", "status": 200, "latency_ms": 0.5}
+INFO:     127.0.0.1:53410 - "WebSocket /ws/events?backlog=300" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53411 - "WebSocket /ws/events?backlog=300" [accepted]
+INFO:     connection open
+{"request_id": "792d30c7b628", "method": "GET", "path": "/api/features", "status": 200, "latency_ms": 102.9}
+{"request_id": "4c9954a518b7", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 103.9}
+{"request_id": "933cd66881cd", "method": "POST", "path": "/api/events", "status": 201, "latency_ms": 108.7}
+{"request_id": "41266b758e53", "method": "POST", "path": "/api/events", "status": 201, "latency_ms": 112.8}
+{"request_id": "90ca0a961a21", "method": "GET", "path": "/api/network", "status": 200, "latency_ms": 12.9}
+{"request_id": "c3031ceb77c7", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 19.2}
+{"request_id": "2e8d39b204ad", "method": "GET", "path": "/api/metrics", "status": 200, "latency_ms": 22.5}
+{"request_id": "e42aaca23c5e", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 1.8}
+{"request_id": "98efb362fa3a", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 1.0}
+{"request_id": "5c715ea1442d", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 1.1}
+{"request_id": "cbdb5b00b7ff", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 1.3}
+{"request_id": "1f6bdee8562e", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 1.1}
+{"request_id": "fd233bb4a191", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 1.3}
+{"request_id": "21e07ce0d482", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 1.8}
+{"request_id": "d7fffa4cc8b9", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 1.1}
+{"request_id": "57e881fee3a3", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 1.2}
+{"request_id": "70dcc1f89f2c", "method": "GET", "path": "/api/features", "status": 200, "latency_ms": 4.1}
+INFO:     127.0.0.1:56282 - "WebSocket /ws/events?backlog=300" [accepted]
+INFO:     connection open
+{"request_id": "0e783e0f872c", "method": "GET", "path": "/api/health", "status": 200, "latency_ms": 259.2}
+{"request_id": "8b66e960bda3", "method": "POST", "path": "/api/events", "status": 201, "latency_ms": 265.3}
+{"request_id": "c4b6ae97aef6", "method": "GET", "path": "/api/metrics", "status": 200, "latency_ms": 11.3}
+{"request_id": "ebe15cc0a543", "method": "GET", "path": "/api/network", "status": 200, "latency_ms": 15.0}
+{"request_id": "80977ef7a997", "method": "POST", "path": "/api/events", "status": 201, "latency_ms": 19.3}

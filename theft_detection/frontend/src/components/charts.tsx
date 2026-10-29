@@ -1,254 +1,236 @@
-import {
-  Area, Bar, BarChart, Brush, CartesianGrid, Cell, ComposedChart, ErrorBar, LabelList, Line, ReferenceArea, ReferenceLine,
-  ResponsiveContainer, Tooltip, XAxis, YAxis,
-} from "recharts";
-import { fmt, stepLabel } from "../lib/format";
-import type { Balance, ConsumerSeries, UnitSeries } from "../lib/types";
+/**
+ * Result charts for one analysis. Conventions (dataviz skill): one axis per chart, thin
+ * marks, status colours only with icon+label, text in ink tokens, every chart has a
+ * table view via ChartCard, hover tooltips on every mark.
+ */
+import type { Annotation, Data, Shape } from "plotly.js";
+import { forwardRef } from "react";
+import type { DetectResponse, LocalizeResponse, Measurements } from "../api/types";
+import { busName, channelLabel, featureLabel, sectionName } from "../lib/labels";
+import { Plot, useTheme } from "./Plot";
+import { ChartCard, StatusBadge, num, pct } from "./ui";
 
-const GRID = "#1e2d45";
-const AXIS = "#2e4262";
-const C1 = "#3987e5";
-const C2 = "#d95926";
-const C3 = "#199e70";
-const REF = "#8a9bb4";
-
-const tooltipStyle = {
-  contentStyle: { background: "#0f1a2b", border: "1px solid #2e4262", borderRadius: 6, fontSize: 12, color: "#e6edf7" },
-  labelStyle: { color: "#a9b8cc", marginBottom: 4 },
-  itemStyle: { padding: 0 },
-};
-
-function dayTicks(maxStep: number) {
-  const ticks = [];
-  for (let s = 0; s <= maxStep; s += 24) ticks.push(s);
-  return ticks;
-}
-const dayFmt = (s: number) => `D${Math.floor(s / 24) + 1}`;
-
-export function LegendRow({ items }: { items: { color: string; label: string; kind?: "line" | "band" | "bar" }[] }) {
-  return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-ink-2">
-      {items.map((i) => (
-        <span key={i.label} className="flex items-center gap-1.5">
-          {i.kind === "band" ? <span className="inline-block h-2.5 w-4 rounded-sm" style={{ background: i.color, opacity: 0.35 }} />
-            : i.kind === "bar" ? <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: i.color }} />
-              : <span className="inline-block h-[2px] w-4" style={{ background: i.color }} />}
-          {i.label}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-/** Observed vs expected hourly consumption for one consumer, as known at step t. */
-export function ConsumerChart({ s, t, start, showTruth, height = 220, brush = false, startTs }: {
-  s: ConsumerSeries; t: number; start: number; showTruth: boolean; height?: number; brush?: boolean; startTs: string;
-}) {
-  const data = [];
-  for (let i = start; i <= t; i++) {
-    const arrived = s.arrival_step[i] >= 0 && s.arrival_step[i] <= t;
-    data.push({
-      step: i,
-      observed: arrived ? s.observed_kwh[i] : null,
-      expected: s.expected_kwh[i],
-      band: [Math.max(0, s.expected_kwh[i] - s.expected_sd[i]), s.expected_kwh[i] + s.expected_sd[i]],
-      truth: showTruth ? s.truth.true_kwh[i] : undefined,
-      theft: s.truth.theft_like[i],
-    });
+/* ------------------------------------------------------------------ detection */
+/** One-line plain-English summary ("Suspected unauthorized extraction near km 145 (119–170)"). */
+export function summaryLine(detect: DetectResponse, localize?: LocalizeResponse | null): string {
+  if (detect.status !== "suspicious") return "Normal operation — no anomaly above the alarm threshold.";
+  const lc = detect.likely_cause;
+  const main = (Object.keys(lc) as (keyof typeof lc)[]).reduce((a, b) => (lc[a] >= lc[b] ? a : b));
+  if (main === "extraction" && localize) {
+    const [lo, hi] = localize.interval_km;
+    return `Suspected unauthorized extraction near km ${localize.est_km.toFixed(0)} (80% interval ${lo.toFixed(0)}–${hi.toFixed(0)} km).`;
   }
-  const theftSpans = showTruth ? spans(s.truth.theft_like, start, t) : [];
+  return main === "sensor_error" ? "Anomaly most consistent with a metering / sensor fault — verify meters before any patrol."
+    : "Anomaly most consistent with a network event such as a line outage.";
+}
+
+export function DetectionCard({ detect, latencyMs, localize }: { detect: DetectResponse; latencyMs?: number; localize?: LocalizeResponse | null }) {
+  const t = useTheme();
+  const s = detect.anomaly_score;
   return (
-    <div>
-      <LegendRow items={[
-        { color: C1, label: "Recorded (meter readings received by this step)" },
-        { color: REF, label: "Expected profile" },
-        { color: REF, label: "±1 SD", kind: "band" },
-        ...(showTruth ? [{ color: C2, label: "True demand (simulation)" }] : []),
-      ]} />
-      <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
-          <CartesianGrid stroke={GRID} vertical={false} />
-          {theftSpans.map(([a, b]) => <ReferenceArea key={a} x1={a} x2={b} fill={C2} fillOpacity={0.08} stroke="none" />)}
-          <XAxis dataKey="step" type="number" domain={[start, t]} ticks={dayTicks(t).filter((x) => x >= start)} tickFormatter={dayFmt} stroke={AXIS} />
-          <YAxis stroke={AXIS} width={48} tickFormatter={(v) => `${v}`} label={{ value: "kWh/h", angle: -90, position: "insideLeft", offset: 22, fill: "#7487a3", fontSize: 11 }} />
-          <Tooltip {...tooltipStyle} labelFormatter={(v) => stepLabel(startTs, Number(v))}
-            formatter={(v: unknown, name: string) => (name === "band" ? null : [Array.isArray(v) ? "" : fmt.kwh(v as number, 3), name])} />
-          <Area dataKey="band" stroke="none" fill={REF} fillOpacity={0.14} isAnimationActive={false} name="band" />
-          <Line dataKey="expected" stroke={REF} strokeWidth={1.5} dot={false} isAnimationActive={false} name="Expected" />
-          {showTruth && <Line dataKey="truth" stroke={C2} strokeWidth={1.5} dot={false} isAnimationActive={false} name="True demand" />}
-          <Line dataKey="observed" stroke={C1} strokeWidth={2} dot={false} connectNulls={false} isAnimationActive={false} name="Recorded" />
-          {brush && <Brush dataKey="step" height={18} stroke={AXIS} fill="#0f1a2b" travellerWidth={8} tickFormatter={dayFmt} />}
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
+    <section className="card flex items-center gap-5 p-4" aria-label="Detection result">
+      <div className="flex-1">
+        <h2 className="card-title">Detection</h2>
+        <div className="mt-2"><StatusBadge status={detect.status} large /></div>
+        <p className="mt-2 text-sm font-medium text-ink-1" data-testid="status-summary">{summaryLine(detect, localize)}</p>
+        <p className="mt-1 text-xs text-ink-3">
+          {detect.status === "suspicious"
+            ? "Unexplained anomaly — suspected, not confirmed. Requires field verification."
+            : "No anomaly above the alarm threshold (score < 0.5)."}
+        </p>
+        {latencyMs != null && <p className="mt-1 mono text-[10px] text-ink-3">analysed in {latencyMs.toFixed(0)} ms</p>}
+      </div>
+      <div className="w-40 text-center" aria-label={`Anomaly score ${s.toFixed(3)}`}>
+        <svg viewBox="0 0 120 70" className="w-full" aria-hidden>
+          <path d="M10 60 A50 50 0 0 1 110 60" fill="none" stroke={t.grid} strokeWidth="10" strokeLinecap="round" />
+          <path d="M10 60 A50 50 0 0 1 110 60" fill="none" strokeWidth="10" strokeLinecap="round"
+                stroke={detect.status === "suspicious" ? t.status.critical : t.status.good}
+                strokeDasharray={`${Math.PI * 50 * s} 400`} />
+          <line x1="60" y1="8" x2="60" y2="16" stroke={t.text2} strokeWidth="1.5" />
+        </svg>
+        <div className="-mt-6 text-2xl font-semibold mono">{s.toFixed(3)}</div>
+        <div className="text-[10px] text-ink-3">anomaly score · threshold 0.5</div>
+      </div>
+    </section>
   );
 }
 
-function spans(flags: number[], start: number, end: number): [number, number][] {
-  const out: [number, number][] = [];
-  let s: number | null = null;
-  for (let i = start; i <= end; i++) {
-    if (flags[i] && s === null) s = i;
-    if ((!flags[i] || i === end) && s !== null) {
-      out.push([s, flags[i] ? i : i - 1]);
-      s = null;
-    }
-  }
-  return out;
-}
-
-/** Rolling 24 h unexplained energy as a share of input, with the rule threshold. */
-export function BalanceTrendChart({ s, t, showTruth, ruleRatio = 0.03, height = 200, startTs }: {
-  s: UnitSeries; t: number; showTruth: boolean; ruleRatio?: number; height?: number; startTs: string;
-}) {
-  const data = s.rolling_24h.ratio.slice(0, t + 1).map((r, i) => ({
-    step: i,
-    ratio: r == null ? null : 100 * r,
-    z: s.rolling_24h.z[i],
-    unexplained: s.rolling_24h.unexplained[i],
-  }));
-  const theft = showTruth ? spans(s.truth.theft_like, 0, Math.min(t, s.truth.theft_like.length - 1)) : [];
+/* ------------------------------------------------------------------ residuals */
+export function ResidualChart({ detect }: { detect: DetectResponse }) {
+  const t = useTheme();
+  const r = detect.residuals;
+  const thr = detect.threshold_z ?? null;
+  const names = r.map((x) => sectionName(x.section).replace(" → ", " →<br>"));
+  const z = r.map((x) => x.z ?? 0);
+  const data: Data[] = [{
+    type: "bar", x: names, y: z, name: "|r_P| / σ",
+    marker: { color: z.map((v) => (thr && v > thr ? t.status.critical : t.series[0])), line: { color: t.surface, width: 2 } },
+    customdata: r.map((x) => [x.r_p_mw ?? NaN, x.r_q_mvar ?? NaN]),
+    hovertemplate: "%{x}<br>z = %{y:.1f}<br>P residual %{customdata[0]:.2f} MW<br>Q residual %{customdata[1]:.2f} Mvar<extra></extra>",
+    text: z.map((v) => v.toFixed(1)), textposition: "outside", textfont: { color: t.text2 },
+  }];
   return (
-    <div>
-      <LegendRow items={[
-        { color: C1, label: "Unexplained energy, rolling 24 h (% of input)" },
-        { color: REF, label: `Rule threshold ${ruleRatio * 100}%` },
-        ...(showTruth ? [{ color: C2, label: "Theft-like event active (simulation)", kind: "band" as const }] : []),
-      ]} />
-      <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
-          <CartesianGrid stroke={GRID} vertical={false} />
-          {theft.map(([a, b]) => <ReferenceArea key={a} x1={a} x2={b} fill={C2} fillOpacity={0.12} stroke="none" />)}
-          <XAxis dataKey="step" type="number" domain={[0, Math.max(t, 1)]} ticks={dayTicks(t)} tickFormatter={dayFmt} stroke={AXIS} />
-          <YAxis stroke={AXIS} width={48} tickFormatter={(v) => `${v}%`} />
-          <ReferenceLine y={ruleRatio * 100} stroke={REF} strokeWidth={1} />
-          <ReferenceLine y={0} stroke={AXIS} />
-          <Tooltip {...tooltipStyle} labelFormatter={(v) => stepLabel(startTs, Number(v))}
-            formatter={(v: unknown, name: string, item: { payload?: { z?: number; unexplained?: number } }) =>
-              name === "ratio" ? [`${(v as number).toFixed(2)}% (${fmt.kwh(item.payload?.unexplained)}, ${fmt.sigma(item.payload?.z)})`, "Unexplained, 24 h"] : [String(v), name]} />
-          <Line dataKey="ratio" stroke={C1} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
+    <ChartCard title="Section power residuals" subtitle="Unexplained active power per metered section, in σ of normal operation"
+      table={{ columns: ["Section", "r_P (MW)", "r_Q (Mvar)", "z"], rows: r.map((x) => [sectionName(x.section), num(x.r_p_mw, 2), num(x.r_q_mvar, 2), num(x.z, 2)]) }}>
+      <Plot ariaLabel="Residual z-score per section" height={250} data={data} filename="residuals" layout={{
+        yaxis: { title: { text: "z (σ)" }, rangemode: "tozero" }, showlegend: false,
+        shapes: thr ? [{ type: "line", xref: "paper", x0: 0, x1: 1, y0: thr, y1: thr, line: { color: t.text2, dash: "dash", width: 1.5 } }] : [],
+        annotations: thr ? [{ xref: "paper", x: 1, y: thr, text: `alarm threshold z=${thr.toFixed(1)}`, showarrow: false, yanchor: "bottom", xanchor: "right", font: { color: t.text2, size: 11 } }] : [],
+      }} />
+    </ChartCard>
   );
 }
 
-/** Score of one method over time with its decision threshold. */
-export function ScoreChart({ scores, threshold, t, height = 150, label, startTs }: {
-  scores: (number | null)[]; threshold: number; t: number; height?: number; label: string; startTs: string;
-}) {
-  const data = scores.slice(0, t + 1).map((v, i) => ({ step: i, score: v }));
-  const computed = data.filter((d) => d.score != null).length;
-  return (
-    <div>
-      <LegendRow items={[{ color: C3, label }, { color: REF, label: `Decision threshold ${threshold.toFixed(2)}` }]} />
-      <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
-          <CartesianGrid stroke={GRID} vertical={false} />
-          <XAxis dataKey="step" type="number" domain={[0, Math.max(t, 1)]} ticks={dayTicks(t)} tickFormatter={dayFmt} stroke={AXIS} />
-          <YAxis stroke={AXIS} width={48} />
-          <ReferenceLine y={threshold} stroke={REF} strokeWidth={1} />
-          <Tooltip {...tooltipStyle} labelFormatter={(v) => stepLabel(startTs, Number(v))} formatter={(v: unknown) => [(v as number)?.toFixed(3), "score"]} />
-          <Line dataKey="score" stroke={C3} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} />
-        </ComposedChart>
-      </ResponsiveContainer>
-      {computed < data.length && <div className="text-[11px] text-ink-3">Score history still being computed in the background ({computed} of {data.length} steps ready).</div>}
-    </div>
-  );
-}
-
-/** Energy-balance waterfall: input minus metered, imputed and estimated losses leaves the unexplained part. */
-export function Waterfall({ b, height = 260 }: { b: Balance; height?: number }) {
-  const E = b.input_kwh;
-  const M = b.metered_kwh;
-  const I = b.imputed_kwh;
-  const L = b.estimated_loss_kwh;
-  const U = b.unexplained_kwh;
-  const significant = b.z_score >= 2;
-  const rows = [
-    { name: "Input", base: 0, value: E, color: C1, label: fmt.kwh(E) },
-    { name: "Metered", base: E - M, value: M, color: "#5b7fb0", label: `−${fmt.kwh(M)}` },
-    { name: "Imputed", base: E - M - I, value: I, color: C3, label: `−${fmt.kwh(I)}` },
-    { name: "Losses (estimated)", base: Math.max(0, U), value: L, color: REF, label: `−${fmt.kwh(L)}` },
-    { name: "Unexplained", base: Math.min(0, U), value: Math.abs(U), color: significant ? "#f04848" : "#7487a3", label: fmt.kwh(U), err: 2 * b.sigma_kwh },
+/* ------------------------------------------------------------------ localization */
+export const LocalizationChart = forwardRef<HTMLDivElement, {
+  localize: LocalizeResponse; truthKm?: number | null; onPickTap?: (tapId: string) => void; height?: number; title?: string;
+}>(function LocalizationChart({ localize, truthKm, onPickTap, height = 280, title = "Localization" }, ref) {
+  const t = useTheme();
+  const taps = [...localize.ranked_taps].sort((a, b) => a.km - b.km);
+  const [lo, hi] = localize.interval_km;
+  const ymax = Math.max(...taps.map((x) => x.prob), 0.05) * 1.25;
+  const data: Data[] = [{
+    type: "bar", x: taps.map((x) => x.km), y: taps.map((x) => x.prob), width: 6, name: "Tap probability",
+    marker: { color: t.series[0], line: { color: t.surface, width: 1 } },
+    customdata: taps.map((x) => x.tap_id),
+    hovertemplate: "%{customdata} · km %{x}<br>P = %{y:.1%}<extra></extra>",
+  }];
+  const shapes: Partial<Shape>[] = [
+    { type: "rect", x0: lo, x1: hi, yref: "paper", y0: 0, y1: 1, fillcolor: t.status.critical, opacity: 0.1, line: { width: 0 }, layer: "below" },
+    { type: "line", x0: localize.est_km, x1: localize.est_km, yref: "paper", y0: 0, y1: 1, line: { color: t.status.critical, width: 2 } },
   ];
+  const ann: Partial<Annotation>[] = [
+    { x: localize.est_km, yref: "paper", y: 1, text: `est. ${localize.est_km.toFixed(0)} km`, showarrow: false, yanchor: "bottom", font: { color: t.text, size: 11 } },
+    { x: hi, yref: "paper", y: 0.97, text: `80% interval ${lo.toFixed(0)}–${hi.toFixed(0)} km`, showarrow: false, xanchor: hi > 300 ? "right" : "left", xshift: hi > 300 ? -4 : 4, yanchor: "top", font: { color: t.text2, size: 10 } },
+  ];
+  if (truthKm != null) {
+    shapes.push({ type: "line", x0: truthKm, x1: truthKm, yref: "paper", y0: 0, y1: 1, line: { color: t.text, width: 2, dash: "dot" } });
+    const right = truthKm >= localize.est_km;
+    ann.push({ x: truthKm, yref: "paper", y: 0.82, text: `true ${truthKm} km`, showarrow: false, xanchor: right ? "left" : "right", xshift: right ? 4 : -4, bgcolor: t.surface, font: { color: t.text, size: 11 } });
+  }
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={rows} margin={{ top: 22, right: 12, bottom: 4, left: 8 }} barCategoryGap="30%">
-        <CartesianGrid stroke={GRID} vertical={false} />
-        <XAxis dataKey="name" stroke={AXIS} interval={0} tick={{ fontSize: 11, fill: "#a9b8cc" }} />
-        <YAxis stroke={AXIS} width={64} tickFormatter={(v) => `${Math.round(v).toLocaleString("en-IN")}`} label={{ value: "kWh", angle: -90, position: "insideLeft", offset: 4, fill: "#7487a3", fontSize: 11 }} />
-        <Tooltip {...tooltipStyle} cursor={{ fill: "rgba(255,255,255,0.03)" }}
-          formatter={(_v: unknown, n: string, item: { payload?: { label?: string } }) => (n === "base" ? null : [item.payload?.label, "Energy"])} />
-        <Bar dataKey="base" stackId="w" fill="transparent" isAnimationActive={false} />
-        <Bar dataKey="value" stackId="w" maxBarSize={56} radius={[4, 4, 0, 0]} isAnimationActive={false}>
-          {rows.map((r) => <Cell key={r.name} fill={r.color} />)}
-          <LabelList dataKey="label" position="top" fill="#e6edf7" fontSize={11.5} />
-          <ErrorBar dataKey="err" width={10} stroke="#e6edf7" strokeWidth={1.2} direction="y" />
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <ChartCard title={title}
+      subtitle={<>Method <span className="mono">{localize.method}</span> · bars = top-10 candidate taps · band = 80% interval</>}
+      table={{ columns: ["Tap", "km", "Probability"], rows: localize.ranked_taps.map((x) => [x.tap_id, x.km, pct(x.prob)]) }}>
+      <div ref={ref}>
+        <Plot ariaLabel="Theft location probability along the corridor" height={height} data={data} filename="localization" layout={{
+          xaxis: { title: { text: "km from Sharavathi" }, range: [0, 361], dtick: 50 },
+          yaxis: { title: { text: "probability" }, tickformat: ".0%", range: [0, ymax] },
+          shapes, annotations: ann, showlegend: false,
+        }} />
+      </div>
+      {onPickTap && (
+        <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Ranked taps">
+          {localize.ranked_taps.slice(0, 5).map((tp, i) => (
+            <button key={tp.tap_id} className="btn !px-2 !py-0.5 text-xs" onClick={() => onPickTap(tp.tap_id)}>
+              #{i + 1} {tp.tap_id} <span className="mono text-ink-3">{pct(tp.prob, 0)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="mt-3 grid grid-cols-1 gap-1 text-xs sm:grid-cols-3">
+        {localize.ranked_sections.map((s) => (
+          <div key={s.section} className="flex items-center justify-between rounded bg-surface-2 px-2 py-1">
+            <span className="text-ink-2">{sectionName(s.section)}</span><span className="mono">{pct(s.prob, 0)}</span>
+          </div>
+        ))}
+      </div>
+    </ChartCard>
   );
-}
+});
 
-/** Hourly accounting terms (stacked metered + imputed + losses) against the input meter. */
-export function HourlyAccountingChart({ b, startTs, height = 220 }: { b: Balance; startTs: string; height?: number }) {
-  const n = b.hourly.input.length;
-  const data = Array.from({ length: n }).map((_, i) => ({
-    step: b.window.start_step + i,
-    metered: b.hourly.metered[i],
-    imputed: b.hourly.imputed[i],
-    loss: b.hourly.loss_est[i],
-    input: b.hourly.input[i],
+/* ------------------------------------------------------------------ likely cause */
+const CAUSES = [
+  { key: "extraction", label: "Extraction" },
+  { key: "sensor_error", label: "Sensor error" },
+  { key: "other", label: "Other event" },
+] as const;
+
+export function CauseBar({ detect }: { detect: DetectResponse }) {
+  const t = useTheme();
+  const lc = detect.likely_cause;
+  const data: Data[] = CAUSES.map((c, i) => ({
+    type: "bar", orientation: "h", y: ["cause"], x: [lc[c.key]], name: c.label,
+    marker: { color: t.series[i], line: { color: t.surface, width: 2 } },
+    text: lc[c.key] >= 0.08 ? [`${c.label} ${(lc[c.key] * 100).toFixed(0)}%`] : [""],
+    textposition: "inside", insidetextanchor: "middle", textfont: { color: "#fff", size: 11 },
+    hovertemplate: `${c.label}: %{x:.1%}<extra></extra>`,
   }));
   return (
-    <div>
-      <LegendRow items={[
-        { color: "#5b7fb0", label: "Metered", kind: "bar" }, { color: C3, label: "Imputed", kind: "bar" },
-        { color: REF, label: "Estimated losses", kind: "bar" }, { color: "#e6edf7", label: "Input meter" },
-      ]} />
-      <ResponsiveContainer width="100%" height={height}>
-        <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -6 }} barCategoryGap={1}>
-          <CartesianGrid stroke={GRID} vertical={false} />
-          <XAxis dataKey="step" stroke={AXIS} tickFormatter={(s) => stepLabel(startTs, s).slice(4, 10)} minTickGap={40} />
-          <YAxis stroke={AXIS} width={52} label={{ value: "kWh/h", angle: -90, position: "insideLeft", offset: 14, fill: "#7487a3", fontSize: 11 }} />
-          <Tooltip {...tooltipStyle} labelFormatter={(v) => stepLabel(startTs, Number(v))} formatter={(v: unknown, n: string) => [fmt.kwh(v as number, 2), n]} />
-          <Bar dataKey="metered" stackId="a" fill="#5b7fb0" isAnimationActive={false} name="Metered" />
-          <Bar dataKey="imputed" stackId="a" fill={C3} isAnimationActive={false} name="Imputed" />
-          <Bar dataKey="loss" stackId="a" fill={REF} isAnimationActive={false} name="Estimated losses" />
-          <Line dataKey="input" stroke="#e6edf7" strokeWidth={2} dot={false} isAnimationActive={false} name="Input meter" />
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
+    <ChartCard title="Likely cause" subtitle="If anomalous, how the evidence splits (6-class model, anomaly classes renormalised)"
+      table={{ columns: ["Cause", "Share"], rows: CAUSES.map((c) => [c.label, pct(lc[c.key])]) }}>
+      <Plot ariaLabel="Likely cause split" height={100} data={data} filename="likely-cause" layout={{
+        barmode: "stack", xaxis: { range: [0, 1], visible: false }, yaxis: { visible: false },
+        margin: { l: 4, r: 4, t: 4, b: 4 }, legend: { orientation: "h", y: -0.25, x: 0, traceorder: "normal" },
+      }} />
+    </ChartCard>
   );
 }
 
-/** Daily recorded minus expected energy (only readings received by step t). */
-export function DailyDifferenceChart({ s, t, height = 150 }: { s: ConsumerSeries; t: number; height?: number }) {
-  const days = Math.floor(t / 24) + 1;
-  const data = Array.from({ length: days }).map((_, d) => {
-    let diff = 0;
-    let n = 0;
-    for (let i = d * 24; i < Math.min((d + 1) * 24, t + 1); i++) {
-      const arrived = s.arrival_step[i] >= 0 && s.arrival_step[i] <= t && s.observed_kwh[i] != null;
-      if (arrived) { diff += (s.observed_kwh[i] as number) - s.expected_kwh[i]; n++; }
-    }
-    return { day: `D${d + 1}`, diff: n ? Number(diff.toFixed(2)) : null, n };
-  });
+/* ------------------------------------------------------------------ SHAP */
+export function ShapBar({ detect }: { detect: DetectResponse }) {
+  const t = useTheme();
+  const top = [...detect.top_contributors].reverse();
+  if (!top.length) return null;
+  const data: Data[] = [{
+    type: "bar", orientation: "h", y: top.map((c) => featureLabel(c.feature)), x: top.map((c) => c.shap),
+    marker: { color: top.map((c) => (c.shap >= 0 ? t.status.critical : t.series[0])), line: { color: t.surface, width: 2 } },
+    customdata: top.map((c) => c.feature),
+    hovertemplate: "%{y}<br><span style='font-family:monospace'>%{customdata}</span><br>SHAP %{x:+.2f} (log-odds)<extra></extra>",
+  }];
   return (
-    <div>
-      <LegendRow items={[{ color: C1, label: "Recorded − expected per day (kWh); hours with a received reading only", kind: "bar" }]} />
-      <ResponsiveContainer width="100%" height={height}>
-        <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
-          <CartesianGrid stroke={GRID} vertical={false} />
-          <XAxis dataKey="day" stroke={AXIS} />
-          <YAxis stroke={AXIS} width={48} />
-          <ReferenceLine y={0} stroke={AXIS} />
-          <Tooltip {...tooltipStyle} cursor={{ fill: "rgba(255,255,255,0.03)" }}
-            formatter={(v: unknown, _n: string, item: { payload?: { n?: number } }) => [`${fmt.kwh(v as number, 2)} (${item.payload?.n} readings)`, "Difference"]} />
-          <Bar dataKey="diff" fill={C1} maxBarSize={22} radius={[2, 2, 2, 2]} isAnimationActive={false} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <ChartCard title="Top contributors (SHAP)"
+      subtitle={<><span className="text-[var(--status-critical-text)]">▶ pushes toward anomaly</span> · <span className="text-accent">◀ toward normal</span></>}
+      table={{ columns: ["Feature", "SHAP (log-odds)"], rows: detect.top_contributors.map((c) => [featureLabel(c.feature), c.shap.toFixed(3)]) }}>
+      <Plot ariaLabel="SHAP feature contributions" height={220} data={data} filename="shap" layout={{
+        xaxis: { title: { text: "SHAP (log-odds)" }, zeroline: true }, yaxis: { automargin: true },
+        margin: { l: 8, r: 16, t: 8, b: 40 }, showlegend: false,
+      }} />
+    </ChartCard>
+  );
+}
+
+/* ------------------------------------------------------------------ measured vs expected */
+const QUANT = [
+  { k: "vm", title: "Voltage", unit: "pu" },
+  { k: "p", title: "Active power", unit: "MW" },
+  { k: "q", title: "Reactive power", unit: "Mvar" },
+] as const;
+
+export function MeasuredVsExpected({ measurements, expected }: { measurements: Measurements; expected: Measurements }) {
+  const t = useTheme();
+  const buses = Array.from(new Set(Object.keys(measurements).map((k) => k.match(/^m_(?!LINE)(.+)_(vm|va|p|q)$/)?.[1]).filter(Boolean))) as string[];
+  const rows = Object.keys(measurements).map((k) => [channelLabel(k), num(measurements[k], 3), num(expected[k], 3),
+    measurements[k] != null && expected[k] != null ? (measurements[k]! - expected[k]!).toFixed(3) : "—"]);
+  return (
+    <ChartCard title="Measured vs expected" subtitle="Metered bus channels · expected = theft-free, noiseless twin at the same load"
+      table={{ columns: ["Channel", "Measured", "Expected", "Δ"], rows }}>
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+        {QUANT.map((q) => {
+          const m = buses.map((b) => measurements[`m_${b}_${q.k}`] ?? null);
+          const e = buses.map((b) => expected[`m_${b}_${q.k}`] ?? null);
+          const data: Data[] = [
+            q.k === "vm"
+              // voltage: dot plot on its own range — bars from 0 would hide a 0.01 pu deviation
+              ? { type: "scatter", mode: "markers", x: buses.map(busName), y: m, name: "Measured",
+                  marker: { color: t.series[0], size: 11, line: { color: t.surface, width: 2 } },
+                  hovertemplate: `%{x}<br>measured %{y:.4f} ${q.unit}<extra></extra>` }
+              : { type: "bar", x: buses.map(busName), y: m, name: "Measured", marker: { color: t.series[0] },
+                  hovertemplate: `%{x}<br>measured %{y:.3f} ${q.unit}<extra></extra>` },
+            { type: "scatter", mode: "markers", x: buses.map(busName), y: e, name: "Expected",
+              marker: { symbol: "line-ew-open", size: 26, color: t.text, line: { width: 2.5, color: t.text } },
+              hovertemplate: `%{x}<br>expected %{y:.3f} ${q.unit}<extra></extra>` },
+          ];
+          return (
+            <div key={q.k}>
+              <div className="mb-1 text-xs text-ink-2">{q.title} ({q.unit})</div>
+              <Plot ariaLabel={`${q.title} measured vs expected`} height={200} data={data} filename={`measured-${q.k}`}
+                layout={{ margin: { l: 44, r: 8, t: 24, b: 50 }, legend: { orientation: "h", y: 1.18, x: 0 },
+                          yaxis: q.k === "vm" ? { tickformat: ".3f", autorange: true } : {} }} />
+            </div>
+          );
+        })}
+      </div>
+    </ChartCard>
   );
 }

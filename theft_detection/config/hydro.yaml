@@ -1,0 +1,50 @@
+# Sharavathi Hydro Generation — Seasonal Constraints
+# Linganamakki reservoir and generation station parameters.
+# All values source: assumed until verified with KPTCL/SLDC data.
+
+reservoir:
+  name: Linganamakki
+  full_capacity_mcm: 4482        # source: assumed (million cubic meters)
+  min_operating_mcm: 1500        # source: assumed (dead storage level)
+  turbine_capacity_mw: 1035      # source: assumed (10 × 103.5 MW units)
+  efficiency: 0.88               # source: assumed (overall hydro efficiency)
+  head_m: 335                    # source: assumed (gross head, meters)
+  source: assumed
+
+seasons:
+  monsoon:
+    months: [6, 7, 8, 9, 10]
+    description: "High inflow from Western Ghats, reservoir filling, maximum hydro available"
+    reservoir_level_pct: 85.0     # source: assumed
+    max_generation_mw: 900.0      # source: assumed (most units operational)
+    min_generation_mw: 200.0      # source: assumed (must-run for grid stability)
+    ramp_rate_mw_per_min: 15.0    # source: assumed (fast hydro response)
+    daily_energy_limit_mwh: 18000 # source: assumed (generous during monsoon)
+    inflow_cumecs: 450.0          # source: assumed (m³/s)
+    corridor_load_scale: 0.85     # source: assumed (lower cooling demand)
+    source: assumed
+
+  post_monsoon:
+    months: [11, 12, 1, 2]
+    description: "Moderate reservoir, controlled discharge, balanced operation"
+    reservoir_level_pct: 65.0     # source: assumed
+    max_generation_mw: 600.0      # source: assumed
+    min_generation_mw: 150.0      # source: assumed
+    ramp_rate_mw_per_min: 12.0    # source: assumed
+    daily_energy_limit_mwh: 12000 # source: assumed
+    inflow_cumecs: 120.0          # source: assumed
+    corridor_load_scale: 0.95     # source: assumed
+    source: assumed
+
+  summer:
+    months: [3, 4, 5]
+    description: "Low reservoir, restricted hydro, peak Bengaluru demand"
+    reservoir_level_pct: 35.0     # source: assumed
+    max_generation_mw: 350.0      # source: assumed (conservation mode)
+    min_generation_mw: 100.0      # source: assumed
+    ramp_rate_mw_per_min: 8.0     # source: assumed (slower ramp for conservation)
+    daily_energy_limit_mwh: 6000  # source: assumed (strict daily rationing)
+    inflow_cumecs: 30.0           # source: assumed (dry season)
+    corridor_load_scale: 1.15     # source: assumed (peak cooling + irrigation pumping)
+    source: assumed
+

@@ -1,5 +1,11 @@
-backend/.venv
-frontend/node_modules
-frontend/dist
-data/generated
+# API build context is the project root; data/ and config/ are bind-mounted at runtime
+data
+frontend
+figures
+docs
+tests
 **/__pycache__
+**/.pytest_cache
+.env
+*.log
+install_log*.txt

@@ -1,46 +1,30 @@
-# OWNER: ALL | STATUS: ACTIVE
-# Environment & Secrets
+# secrets — copy theft_detection/.env.example to .env locally
 .env
-.env.local
-.env.*.local
-!.env.example
 
-# Python & Virtual Environments
-.venv/
-venv/
-ENV/
-env/
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.egg-info/
-dist/
-build/
-*.egg
-
-# Testing & Coverage
 .pytest_cache/
-.coverage
-.coverage.*
-htmlcov/
+.venv/
+venv/
+install_log*.txt
 
-# Experiments & Tracking
-experiments/mlruns/
-mlruns/
-.mlflow/
+# Node / frontend build + test output
+node_modules/
+theft_detection/frontend/dist/
+theft_detection/frontend/test-results/
+theft_detection/frontend/playwright-report/
+*.tsbuildinfo
 
-# Data Directories (keep structure via .gitkeep)
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-data/samples/*
-!data/samples/.gitkeep
+# Sensor-study datasets (~350 MB, regenerate with `make study-data`).
+# Everything else in data/ is committed so the app runs straight after cloning:
+#   data/models/ (trained models + metrics), data/raw/baseline_states.parquet,
+#   data/processed/dataset_major_only.parquet + splits.json (Replay / held-out cases)
+theft_detection/data/processed/study/
 
-# IDE & OS
+# editor / OS
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
-.idea/
-.vscode/
-*.swp
-*.swo
+

@@ -1,13 +1,34 @@
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
 
-// In development the API runs on :8000; in production FastAPI serves the built files itself.
+const API = process.env.VITE_API_URL ?? process.env.VITE_API_TARGET ?? "http://127.0.0.1:8000";
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react()],
   server: {
     port: 5173,
-    proxy: { "/api": "http://127.0.0.1:8000" },
+    proxy: {
+      "/api": { target: API, changeOrigin: true },
+      "/ws": { target: API.replace(/^http/, "ws"), ws: true },
+    },
   },
-  build: { chunkSizeWarningLimit: 1200 },
+  preview: {
+    port: 4173,
+    proxy: {
+      "/api": { target: API, changeOrigin: true },
+      "/ws": { target: API.replace(/^http/, "ws"), ws: true },
+    },
+  },
+  build: {
+    chunkSizeWarningLimit: 4000,
+    rollupOptions: { output: { manualChunks: { plotly: ["plotly.js-dist-min"], flow: ["@xyflow/react"] } } },
+  },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/test/setup.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
+    css: false,
+  },
 });

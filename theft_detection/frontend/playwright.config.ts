@@ -1,16 +1,25 @@
 import { defineConfig } from "@playwright/test";
 
-// UI acceptance tests. Start the app first (scripts/run.ps1 serves the built UI on :8000),
-// or set BASE_URL=http://localhost:5173 to test the Vite dev server.
+const PY = process.env.PYTHON ?? "python";
+
 export default defineConfig({
-  testDir: "e2e",
-  timeout: 180_000,
+  testDir: "./e2e",
+  timeout: 90_000,
   expect: { timeout: 30_000 },
-  workers: 1,
-  reporter: [["list"]],
-  use: {
-    baseURL: process.env.BASE_URL ?? "http://127.0.0.1:8000",
-    viewport: { width: 1600, height: 900 },
-    trace: "retain-on-failure",
-  },
+  use: { baseURL: "http://127.0.0.1:5173", viewport: { width: 1440, height: 900 } },
+  webServer: [
+    {
+      command: `"${PY}" -m uvicorn app.main:app --port 8000`,
+      cwd: "../backend",
+      url: "http://127.0.0.1:8000/api/health",
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+    {
+      command: "npx vite --port 5173 --strictPort --host 127.0.0.1",
+      url: "http://127.0.0.1:5173",
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+  ],
 });

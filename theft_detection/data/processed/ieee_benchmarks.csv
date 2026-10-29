@@ -1,0 +1,4 @@
+case,buses,lines,transformers,converged,generation_mw,load_mw,losses_mw,min_vm_pu,max_vm_pu,max_line_loading_pct,error
+case14,14,15,5,True,272.393272,259.0,13.393272,1.01,1.09,1.5076,
+case39,39,35,11,True,6297.871126,6254.23,43.641126,0.982,1.0636,77.0195,
+case118,118,173,13,True,4375.169693,4242.0,133.169693,0.943,1.05,4.4751,
