@@ -1,5 +1,8 @@
-# secrets — copy theft_detection/.env.example to .env locally
-.env
+# Secrets — keep the committed templates, ignore local variants such as
+# .env, .env.local, and .env.production at every directory level.
+.env*
+!.env.example
+!**/.env.example
 
 # Python
 __pycache__/

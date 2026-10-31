@@ -100,6 +100,13 @@ and [handoff contracts](contracts/README.md) before editing.
 | **Person 3 - Optimization, RAG and full-stack** | **Partial** | Existing FastAPI, React, and RAG features are present and the dashboard/API start locally. Mitigation remains a stub; OR-Tools optimization and closed-loop cascade verification are outstanding. |
 | **Person 4 - Theft and loss intelligence** | **Partial** | Existing corridor extraction detection and tap localization are present. The new `loss_intelligence/` area is only a scaffold; feeder energy balance, interval-meter anomaly fusion, inspection ranking, and the T9 theft-aware cascade experiment remain to be completed. |
 
+**Role-map note:** this table follows `theft_detection/docs/TEAM_OWNERSHIP.md`,
+where Person 2 owns cascade ML. The attached PRD uses Person 2 for Cloud, Data
+and Platform. The current P2 platform implementation and handoff status are
+documented in the repository-root [P2 agent context](../docs/p2/agent_context.md)
+and [root README](../README.md); do not interpret this demo table as the PRD
+P2 platform status.
+
 ### Person 1 audit against the product PRD
 
 This uses the PDF's Person 1 assignment: R1, R10, H1, H3, H4, H5, and H6,
