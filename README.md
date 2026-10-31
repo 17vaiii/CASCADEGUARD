@@ -17,7 +17,47 @@ AI-assisted cascade-failure prevention and non-technical loss (theft) detection 
 
 ---
 
-## 2. Directory Structure with File Ownership
+## 2. Current P1 and P2 Progress
+
+This section records what has been delivered, why it exists, and the remaining handoffs. “Completed” means implemented in the local project; it does not mean deployed to AWS or validated against private utility data.
+
+### P1 — Grid Simulation and Search
+
+**Purpose:** provide the physics-based ground truth and simulator that the ML, theft, and mitigation workstreams use. It models how outages, hydro dispatch, and changing operating seasons affect power flow and cascade risk on a clearly labelled, assumed Sharavathi–Bengaluru corridor.
+
+**Delivered:**
+
+- IEEE 14/39/118 power-flow benchmarks and the reduced corridor model, with topology assumptions documented.
+- AC power-flow cascade simulation with outage trips, re-solves, island handling, load shedding, and labelled outcomes.
+- Seasonal operating profiles and hydro dispatch constrained by ramp, energy, inflow, and minimum-reservoir assumptions.
+- Synthetic corridor-like topologies, seasonal weak-link reports, and simulator-only contingency/attack search.
+- Scenario and handoff artifacts used to generate local cascade data for downstream work.
+
+**Remaining integration/limitations:** weather weights and renewable variations are not yet carried through the scenario dataset and screening pipeline; GNN-guided attack search needs P2/P3 model integration. The corridor and hydro parameters remain assumptions, not a verified KPTCL model. See [P1 implementation notes](theft_detection/docs/PERSON1_GRID_SIMULATION.md) and [corridor assumptions](theft_detection/docs/CORRIDOR_ASSUMPTIONS.md).
+
+### P2 — Cloud, Data and Platform
+
+**Purpose:** make reproducible, labelled data and shared platform interfaces available to the other workstreams, then provide scalable generation, experiment tracking, and a deployable API. P3 needs cascade scenario data; P4 needs synthetic meter data; P5 ultimately needs the service/API handoff.
+
+**Done locally:**
+
+- Repository setup, project contracts/configuration, Makefile automation, and the GitHub Actions CI workflow for Python and frontend checks.
+- Local scenario and synthetic meter-data generation paths, plus Parquet/data artifacts used for development and handoffs. Current generated files remain on the project machine unless explicitly committed as small fixtures.
+- The Python test dependencies and RAG status test were corrected so the CI pipeline passes on `vm1`.
+
+**Still to do:**
+
+- Set up the AWS account resources and cost controls, then decide and configure the AWS storage/compute services for the project.
+- Move/scale scenario generation to Ray and S3, and record cluster-versus-local throughput.
+- Configure shared MLflow or Weights & Biases experiment tracking.
+- Finish and deploy the Dockerized FastAPI service (the PRD names ECS as an option) and complete the API integration with P3/P4/P5.
+- Add the planned streaming telemetry/scoring path if the core work is complete; it is a stretch item in the PRD.
+
+**Cloud timing:** AWS setup and P2 cloud work are intentionally deferred and will be done later. Until then, development, generated datasets, model outputs, and other artifacts will be stored and used locally in the project workspace. This is enough for local development and current handoffs, but cloud throughput measurements and cloud deployment remain pending. Do not upload real consumer data; the student build uses synthetic/public data.
+
+---
+
+## 3. Directory Structure with File Ownership
 
 ```text
 cascadeguard-sharavathi/
