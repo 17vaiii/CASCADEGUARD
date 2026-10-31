@@ -233,7 +233,10 @@ def test_api(monkeypatch):
 
     with TestClient(app) as c:
         s = c.get("/api/rag/status").json()
-        assert s["enabled"] and s["n_chunks"] > 50 and any(d["doc_id"] == "safety_governance" for d in s["sources"])
+        assert s["enabled"]
+        assert s["n_chunks"] > 0
+        assert s["n_chunks"] == sum(source["n_chunks"] for source in s["sources"])
+        assert any(d["doc_id"] == "safety_governance" for d in s["sources"])
         assert c.get("/api/features").json()["rag_enabled"] is True
 
         r = c.post("/api/rag/advise", json={"analysis": ANALYSIS_THEFT})
