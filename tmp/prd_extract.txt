@@ -1,0 +1,1034 @@
+--- PAGE 1 ---\nPRD: CascadeGuard-Sharavathi
+AI for cascade-failure prevention and theft detection on the Sharavathi (Shivamogga)
+to Bengaluru power corridor
+Author: Vaibhav | Status: Draft v1 | Based on: CascadeGuard v2 project report | SDG 9
+Note on facts: Plant capacities, line voltages, substation names and loss figures
+below are working assumptions from public knowledge. They must be verified
+against KPCL, KPTCL, SLDC Karnataka and BESCOM published data before being
+used in the report. All results in the student version come from simulation and
+synthetic or public datasets.
+1. Summary
+CascadeGuard v2 is a generic pipeline: screen, predict, explain, retrieve similar cases,
+recommend the smallest fix, verify, brief the operator. This PRD adapts it to one real-
+world corridor: hydro generation in the Sharavathi valley (Linganamakki reservoir,
+Sharavathi and Mahatma Gandhi power stations near Jog, Gerusoppa and related
+stations), transmitted through Shivamogga district to the Bengaluru load centre.
+It adds a second capability that the generic version does not have: electricity theft and
+non-technical loss detection, using energy-balance analysis and smart-meter style data
+on the Bengaluru side of the corridor.
+The product has two pillars sharing one data and graph backbone:
+1. Grid resilience: predict, explain and mitigate cascading failures on the corridor.
+2. Loss and theft intelligence: locate where energy is being lost or stolen, and separate it
+from normal technical loss.
+2. Problem Statement
+Resilience. Bengaluru depends on a small number of long transmission paths from hydro
+generation in the Western Ghats, plus other sources. Losing one or two corridor elements
+shifts flow onto neighbours and can start a cascade. Operators rely on N-1 studies, which
+are slow for N-2 and N-3 and give no explanation or recommended action. Hydro adds its
+own complexity: output depends on reservoir level and monsoon inflow, so the operating
+point changes season to season.
+PRD: CascadeGuard-Sharavathi
+Page 1 of 24\n--- PAGE 2 ---\nTheft. A meaningful part of energy losses in distribution is non-technical: meter
+tampering, direct hooking, billing errors and illegal tapping of HT lines. Today it is found by
+inspection drives and periodic audits, which are reactive and expensive. Technical loss
+(heating in lines and transformers) is physics. Non-technical loss is behaviour. Mixing
+them hides the real problem.
+Gap this product fills:
+Fast screening of thousands of failure combinations on this specific corridor, with
+explanations and verified minimal fixes.
+A unified energy-balance view that quantifies expected technical loss from the power-
+flow model and flags the unexplained remainder as suspected theft, by feeder and by
+consumer cluster.
+One platform for control-room, planning and vigilance teams instead of separate tools.
+3. Goals and Non-Goals
+Goals
+G1. Predict cascade extent and screen N-2/N-3 on a model of the Sharavathi to
+Bengaluru corridor much faster than full power-flow, with calibrated uncertainty.
+G2. Explain critical lines, likely cascade path and give a verified minimal mitigation.
+G3. Model hydro-specific behaviour: seasonal inflow, reservoir-constrained dispatch,
+and fast hydro ramping as a mitigation option.
+G4. Detect suspected theft at feeder and consumer-cluster level with a transparent,
+explainable score.
+G5. Rank theft leads for field inspection so that limited inspection teams visit the
+highest-yield locations first.
+G6. Run as a deployable, cloud-served system with a live dashboard on simulated
+telemetry.
+Non-Goals
+Not a control system. It advises; humans decide. It never sends commands to real
+equipment.
+No use of real consumer personal data in the student version. Synthetic and public
+datasets only.
+Not accusing individuals. Theft output is a ranked lead for inspection, never a verdict.
+No claims of real-world accuracy until validated on utility data.
+PRD: CascadeGuard-Sharavathi
+Page 2 of 24\n--- PAGE 3 ---\n4. Users and Personas
+5. System Context and Scope
+Corridor modelled (assumption, to be verified):
+Generation: Sharavathi valley hydro stations as aggregated or per-unit generator
+buses, with reservoir-linked energy limits.
+Transmission: high-voltage lines and substations through Shivamogga district towards
+Bengaluru, with interconnections to the wider Karnataka grid represented as
+equivalent buses.
+Load: Bengaluru as a set of load buses (substation level), with feeder-level detail for
+the theft module.
+Grid model strategy. Because the real network model is not public, build in layers:
+1. Start with IEEE 14/39/118 as in v2, for method validation and generalisation tests.
+2. Build a reduced Karnataka corridor model (roughly 30 to 60 buses) from public single-
+line information, with clearly documented assumptions.
+3. Add synthetic topologies shaped like a long radial-to-meshed hydro corridor, for
+generalisation.
+4. If a utility ever shares data, swap in the real model without changing the pipeline.
+Persona Role Main need
+Control-room operator (SLDC
+/ KPTCL)
+Real-time
+monitoring
+Early cascade warning, one clear
+recommended action, confidence
+level
+Transmission planner Reliability studies Worst-case N-k report, weak-link
+ranking, effect of new lines
+Generation scheduler (KPCL) Hydro dispatch Know how much hydro ramp can
+safely mitigate a contingency without
+hurting reservoir plan
+Distribution loss analyst
+(BESCOM)
+Loss reduction Where is the unexplained loss, and
+how confident are we
+Vigilance / inspection officer Field
+enforcement
+Prioritised, evidence-backed
+inspection list
+Student team / evaluator Project demo Reproducible, measurable results
+PRD: CascadeGuard-Sharavathi
+Page 3 of 24\n--- PAGE 4 ---\n6. Features and Requirements
+Priority: P0 must have, P1 should have, P2 stretch.
+6.1 Resilience pillar (inherited from CascadeGuard v2)
+ID Requirement Priority
+R1 Grid simulator with cascade engine (overload trip
+and re-solve) on the corridor model, using
+pandapower
+P0
+R2 Cloud-parallel scenario generator writing labelled
+Parquet datasets, with measured throughput
+P0
+R3 Graph builder: bus = node, line = edge, per-unit
+normalised features
+P0
+R4 GNN predictor for per-line failure probability,
+cascade size and load loss
+P0
+R5 Calibration: temperature scaling and conformal
+intervals, reported as ECE and coverage
+P0
+R6 GNN-guided N-2/N-3 screening, verified on the
+simulator for top-ranked cases
+P0
+R7 Explainability: critical lines, buses and cascade
+path (GNNExplainer, path tracing)
+P0
+R8 Case-based RAG over past cascades to warm-start
+the optimizer and show precedent
+P0
+R9 OR-Tools minimal mitigation with closed-loop re-
+simulation and fallback
+P0
+R10 Worst-case attack finder (smallest trip set,
+maximum load loss)
+P1
+R11 LLM incident-brief copilot, cited, explanation only P1
+R12 Streaming telemetry scoring and alerts P2
+PRD: CascadeGuard-Sharavathi
+Page 4 of 24\n--- PAGE 5 ---\n6.2 Hydro and corridor-specific additions (new)
+6.3 Theft and loss detection pillar (new)
+ID Requirement Priority
+H1 Seasonal scenario sets: monsoon high-inflow,
+post-monsoon, summer low-reservoir, with
+different generation dispatch and Bengaluru peak
+demand profiles
+P0
+H2 Hydro ramp as mitigation action: the optimizer
+may redispatch hydro units within ramp rates and
+reservoir energy limits
+P0
+H3 Reservoir constraint: mitigation recommendations
+must not violate a configured minimum reservoir
+level or daily energy budget
+P1
+H4 Corridor weak-link report: ranked list of corridor
+elements whose loss causes the largest Bengaluru
+load loss, per season
+P0
+H5 Weather overlay (simulated): heavy-rain or storm
+events raise outage probability of selected lines in
+the Ghats section; used to weight N-k screening
+P2
+H6 Renewable variability: wind and solar injection
+variation elsewhere in the state included as
+scenario features
+P1
+ID Requirement Priority
+T1 Technical loss estimator: from the power-flow
+model, compute expected technical loss per
+feeder or line segment for given loading
+P0
+T2 Energy-balance analysis: compare energy
+entering a feeder or transformer with the sum of
+metered consumption below it; unexplained
+residual after technical loss is the suspected non-
+technical loss
+P0
+PRD: CascadeGuard-Sharavathi
+Page 5 of 24\n--- PAGE 6 ---\nWhy T9 matters (the link between the two pillars). Hidden theft load means lines may be
+more heavily loaded than telemetry shows, which raises real cascade risk. Showing this
+link is the strongest novelty of the combined product.
+ID Requirement Priority
+T3 Consumer-level anomaly detection: unsupervised
+and semi-supervised models on interval meter data
+(sudden consumption drop, flat-lining, night-time
+patterns inconsistent with peers)
+P0
+T4 Hybrid scoring: combine feeder-level residual and
+consumer-level anomaly into one theft-suspicion
+score with a confidence level
+P0
+T5 Explainability for theft: show why a lead is flagged
+(e.g., consumption fell 60% while the feeder
+residual rose the same week; peers on the same
+feeder unchanged)
+P0
+T6 Inspection prioritisation: rank leads by expected
+recovered energy and travel cost, so one
+inspection team covers the best locations
+P1
+T7 Tamper-event signals: use meter event logs (cover
+open, magnetic interference, reverse current)
+when present in the dataset
+P1
+T8 HT line tapping detection: on higher-voltage
+segments, flag unexplained flow and voltage-
+profile signatures consistent with illegal tapping,
+using the power-flow model as the reference
+P2
+T9 Theft-aware grid state: treat suspected
+unmetered load as extra hidden demand when
+running cascade prediction, since unaccounted
+load makes real line loading higher than SCADA
+suggests
+P1
+T10 Case-based RAG for theft: retrieve similar past
+confirmed cases (pattern and outcome) to support
+each lead
+P1
+PRD: CascadeGuard-Sharavathi
+Page 6 of 24\n--- PAGE 7 ---\n6.4 Platform
+7. Theft Detection: Detailed Design
+7.1 Approach
+Theft is hard to label because most of it is never caught. So the design avoids depending
+on real labels.
+1. Physics first. The grid model gives expected technical loss. Whatever remains
+unexplained at a feeder is the candidate non-technical loss.
+2. Behaviour second. Consumer-level models look for patterns that deviate from the
+consumer's own history and from similar peers.
+3. Fusion. A feeder with a high residual raises the prior for every consumer below it. A
+consumer with a strong anomaly on a high-residual feeder gets the highest score.
+7.2 Data for the student version
+Synthetic generator: simulate consumers by type (residential, commercial, small
+industrial) with daily and seasonal patterns, then inject theft types with known labels:
+meter bypass (constant fractional reduction), meter stop, night-time tapping, hooking
+(unmetered extra load on a feeder), and temporary tampering.
+Public datasets: use open smart-meter datasets for realistic base load behaviour, and
+a public electricity-theft benchmark dataset for supervised comparison. Choose and
+cite exact datasets during Phase 1.
+ID Requirement Priority
+P1 FastAPI service in Docker, deployed on Cloud Run
+or ECS
+P0
+P2 Streamlit and Plotly dashboard with two views:
+Grid Resilience and Loss and Theft
+P0
+P3 MLflow or Weights and Biases experiment tracking P0
+P4 Vector store (pgvector or Qdrant) for cascade
+cases, theft cases and the document index
+P0
+P5 Role-based views: operator, planner, loss analyst P2
+P6 Audit log of every recommendation, its verification
+result and the data used
+P1
+PRD: CascadeGuard-Sharavathi
+Page 7 of 24\n--- PAGE 8 ---\nBecause labels are injected, true recall is measurable. This is a key advantage of the
+simulation approach.
+7.3 Models
+Calibration applies here too: an inspector should be told "70% likely" only if that is true.
+7.4 Outputs
+Ranked inspection list with score, confidence, expected energy at stake, and the
+reason codes.
+Feeder heatmap of unexplained loss over time.
+Technical vs non-technical loss split for the corridor.
+7.5 Ethics and Safeguards
+Scores are leads, not accusations. Require human inspection before any action.
+Keep false-positive rate visible; optimise for precision at top-K because inspections
+are costly and wrongful flags harm consumers.
+Check for bias by area or consumer category, and report it.
+Aggregate and anonymise consumer identifiers in any shared demo.
+Layer Method Output
+Feeder Energy balance with technical
+loss from power-flow
+Residual energy and
+percentage per feeder
+Consumer unsupervised Isolation Forest, autoencoder
+reconstruction error, peer-
+group deviation
+Anomaly score
+Consumer supervised (on
+synthetic and public labels)
+Gradient boosting on
+engineered features (load
+shape, variance, zero-reading
+counts, peer ratio)
+Theft probability
+Graph-based GNN over the feeder topology:
+transformer to consumers, so
+neighbours inform each other
+Refined feeder and
+consumer score
+Fusion Calibrated combination,
+conformal intervals
+Final score with
+confidence
+PRD: CascadeGuard-Sharavathi
+Page 8 of 24\n--- PAGE 9 ---\n8. Architecture
+Flow: corridor grid model and synthetic meter data → cloud scenario and data generator
+(Ray, Parquet on S3/GCS) → graph builder → GNN models (cascade and theft) with
+calibration → screening, explainability, case retrieval → OR-Tools mitigation and simulator
+verification → LLM brief → FastAPI service → Streamlit dashboard, with streaming
+telemetry feeding live scoring.
+Role separation (unchanged from v2): the GNN predicts, OR-Tools decides, the simulator
+verifies, the LLM only explains. For theft: the models score, the physics model constrains,
+the human inspects.
+Cloud: same justification as v2 (embarrassingly parallel scenario and meter-data
+generation, one cloud GPU for training, containerised serving) with a hard cost cap using
+spot instances and auto-shutdown.
+9. Non-Functional Requirements
+Latency: single-scenario prediction under 1 second end to end via API; streaming alert
+under 1 second from snapshot to alert.
+Scalability: report scenarios per hour on the cluster versus a single machine; theft
+scoring must handle at least hundreds of thousands of synthetic consumers in batch.
+Reproducibility: fixed seeds, versioned datasets and tracked experiments.
+Safety: advisory only, with no write path to any control system.
+Explainability: every alert or lead has human-readable reasons.
+Privacy: no real personal data in the student build; identifiers hashed in demos.
+Cost: total cloud spend within a stated student budget.
+10. Success Metrics
+Resilience
+Metric Target
+F1 on line-failure prediction Report vs baselines; aim to beat a non-graph
+baseline
+Cascade-size and load-loss MAE Report vs simulator ground truth
+Inference speedup vs power-flow Measured, not promised
+PRD: CascadeGuard-Sharavathi
+Page 9 of 24\n--- PAGE 10 ---\nTheft
+11. Roadmap
+Metric Target
+N-k worst-case recall in GNN top list Report with random and degree-based
+baselines
+ECE and conformal coverage Coverage near the stated level (e.g., 90%)
+Top-K critical-line overlap Report vs simulator ranking
+Mitigation vs greedy and no-action Lower load loss with fewer actions
+Verification pass rate Report, with fallback rate
+Generalisation gap (train on IEEE 14/39 plus
+synthetic, test on IEEE 118 and corridor
+model)
+Report the drop honestly
+Metric Target
+Precision at top-K (K = inspection
+capacity)
+Primary metric; report vs random inspection
+Recall of injected theft by type Report per theft type
+AUROC and PR-AUC Report vs simple threshold baseline
+Feeder-level localisation accuracy Share of injected theft feeders ranked in top N
+Calibration of theft probability ECE reported
+Energy recovered per inspection
+(simulated)
+Compare vs random and vs rule-based ranking
+Theft-aware cascade accuracy (T9) Improvement in load-loss prediction when
+hidden load is modelled
+Phase Work Deliverable
+1 Corridor model, cascade engine,
+seasonal scenarios, cloud data
+generation, synthetic meter-data
+generator with injected theft
+Labelled datasets, throughput numbers
+PRD: CascadeGuard-Sharavathi
+Page 10 of 24\n--- PAGE 11 ---\nCut order if time runs short: streaming, weather overlay, HT tapping, copilot, attack
+finder. Phases 1 to 5 carry the core claims.
+12. Risks and Mitigations
+Phase Work Deliverable
+2 Graph builder, GNN training, calibration Calibrated cascade predictor,
+generalisation results
+3 N-k screening, case-based RAG, hydro-
+aware optimizer (H2, H3)
+Screening recall, retrieval index, verified
+mitigations
+4 Technical loss estimator, energy-
+balance, consumer anomaly models,
+fusion scoring
+Theft detection results by type
+5 FastAPI service, two-view dashboard,
+inspection ranking, theft-aware grid
+state (T9)
+End-to-end demo
+6 Attack finder, incident-brief copilot,
+weak-link report
+Vulnerability report, cited briefs
+7 Streaming telemetry, HT tapping
+detection, weather overlay
+Live scoring demo
+Risk Impact Mitigation
+No access to real
+KPTCL/BESCOM data
+Results are simulation-
+only
+State this clearly; use public data
+plus injected labels; design so real
+data can be swapped in
+Corridor model inaccurate Misleading weak-link
+results
+Document assumptions, validate
+method on IEEE grids, present
+corridor as illustrative
+Synthetic theft is too easy to
+detect
+Inflated metrics Use several theft types, add noise
+and look-alike legitimate changes
+(holiday, new appliance, solar)
+High false positives in theft Wasted inspections,
+unfair flags
+Optimise precision at top-K,
+calibrate, require human review
+Scope too large for the
+timeline
+Unfinished core Strict phase gating and cut order
+above
+PRD: CascadeGuard-Sharavathi
+Page 11 of 24\n--- PAGE 12 ---\n13. Open Questions
+1. Which exact stations and voltage levels define the corridor (verify against KPCL and
+KPTCL public documents)?
+2. Should theft scope stop at distribution feeders in Bengaluru, or include HT tapping on
+the long transmission stretch?
+3. Which public smart-meter and theft datasets will be the primary benchmarks?
+4. Is there any chance of a utility mentor or letter of support to get even a small
+anonymised dataset?
+5. Is the target a college capstone (paper and patent) or a pitch to a utility? This changes
+how much to emphasise novelty versus deployment.
+14. Expected Final Demo
+1. Dashboard shows the Sharavathi to Bengaluru corridor, all lines normal, telemetry
+streaming, season selector set to monsoon.
+2. Trip a corridor line. The system shows predicted cascade, calibrated probabilities,
+critical lines, path and similar past cases.
+3. It recommends a minimal action, possibly including hydro ramp-up within reservoir
+limits, with a verification tick. Apply it: load loss drops (e.g., 18% to 4%).
+4. Switch to the Loss and Theft view: feeder heatmap, technical vs non-technical loss
+split, and a ranked inspection list with reasons.
+5. Show the link: with suspected hidden load included, the cascade prediction for the
+same trip changes, demonstrating why theft detection improves grid safety.
+6. Show the results table for both pillars, ablations and cost summary.
+15. Research Novelty
+Existing work treats cascade prediction and theft detection as separate problems.
+This product connects them: unmetered load biases the grid state and raises cascade
+risk.
+Risk Impact Mitigation
+Cloud cost Budget overrun Spot instances, cost cap, auto-
+shutdown
+Misuse of theft scores Harm to consumers Leads not verdicts, bias checks,
+audit log
+PRD: CascadeGuard-Sharavathi
+Page 12 of 24\n--- PAGE 13 ---\nCase-based RAG over graph states, used to warm-start a safety-critical optimizer
+(from v2), is extended to theft cases.
+Hydro-aware verified mitigation on a real-corridor-shaped model, with seasonal
+scenario sets.
+Physics-informed theft detection: expected technical loss from the power-flow model
+separates physics from behaviour, which improves precision over purely data-driven
+detectors.
+16. Team Structure and Task Breakdown
+Five people, each owning one area end to end, with clear hand-offs between them.
+Requirement IDs (R, H, T, P) refer to section 6.
+16.1 Roles at a glance
+Everyone shares: weekly sync, code review (each person reviews one teammate's work,
+rotating), and writing their own section of the final report.
+Person Role Owns Requirements
+P1 Grid Simulation and
+Search Lead
+Corridor model, cascade
+engine, seasonal and hydro
+scenarios, attack finder
+R1, R10, H1, H3, H4,
+H5, H6
+P2 Cloud, Data and Platform
+Lead
+Cloud data generation,
+synthetic meter data,
+tracking, API, deployment,
+streaming
+R2, R12, P1, P3, P4
+(infra), P6
+P3 Cascade ML Lead Graph builder, GNN,
+calibration, N-k screening,
+explainability
+R3, R4, R5, R6, R7
+P4 Theft and Loss Analytics
+Lead
+Technical loss, energy
+balance, consumer anomaly
+models, fusion, inspection
+ranking, theft-aware grid
+state
+T1 to T10
+P5 Optimization, RAG, LLM
+and Dashboard Lead
+OR-Tools mitigation,
+verification, case-based
+RAG, copilot, dashboard,
+demo
+R8, R9, R11, H2, P2,
+P5
+PRD: CascadeGuard-Sharavathi
+Page 13 of 24\n--- PAGE 14 ---\n16.2 Shared contracts (agree in week 1, then freeze)
+Most integration pain comes from mismatched formats, so define these first.
+Grid snapshot schema: buses, lines, generators, loads, line status, loading, season,
+renewable share.
+Scenario record schema (Parquet): snapshot, initial trip set, final failed lines, load lost,
+affected buses.
+Graph tensor format: node and edge feature names and order, normalisation rules.
+Meter data schema: consumer ID (hashed), feeder, transformer, timestamp, kWh,
+optional tamper events.
+API contract (OpenAPI): request and response for predict, screen, mitigate, theft-
+score.
+Repository layout, branch rules and naming: one repo, one folder per module, pull
+requests required.
+16.3 Tasks by person
+P1: Grid Simulation and Search Lead
+ID Task Depends
+on
+Output
+P1-1 Set up pandapower, load IEEE
+14/39/118 and verify power flow
+none Working simulator notebook
+P1-
+2
+Build the cascade engine (trip
+overloaded lines, re-solve, repeat until
+stable)
+P1-1 Cascade module with tests
+P1-3 Research public single-line
+information and build the reduced
+corridor model (roughly 30 to 60
+buses), document every assumption
+P1-1 Corridor model plus
+assumptions sheet
+P1-
+4
+Define seasonal scenarios: monsoon,
+post-monsoon, summer, with hydro
+dispatch and Bengaluru demand
+profiles
+P1-3 Season configuration files
+P1-
+5
+Add hydro generator limits, ramp
+rates and reservoir energy budget
+(supports H2, H3)
+P1-4 Hydro constraints module
+PRD: CascadeGuard-Sharavathi
+Page 14 of 24\n--- PAGE 15 ---\nP2: Cloud, Data and Platform Lead
+ID Task Depends
+on
+Output
+P1-
+6
+Generate synthetic corridor-like
+topologies for generalisation
+P1-2 Topology generator
+P1-7 Weak-link report: rank corridor
+elements by load loss per season
+P3-6 Weak-link report (H4)
+P1-
+8
+Worst-case attack finder (beam
+search or genetic algorithm using the
+GNN as fitness, verified in simulator)
+P3-5 Attack finder plus
+vulnerability report
+P1-
+9
+Simulated weather and renewable
+variability overlays (stretch)
+P1-4 Overlay scenarios
+ID Task Depends
+on
+Output
+P2-1 Repo, CI, environment files, shared
+contracts document
+none Project skeleton
+P2-2 Cloud account, budget cap, spot
+instances, auto-shutdown
+none Cost-controlled
+environment
+P2-3 Parallel scenario generator with Ray,
+writing Parquet to S3/GCS
+P1-2 Labelled dataset
+P2-4 Throughput benchmark: scenarios per
+hour on cluster vs single machine
+P2-3 Benchmark table
+P2-5 Synthetic meter-data generator with
+injected theft types (meter bypass, meter
+stop, night tapping, hooking, temporary
+tampering) with ground-truth labels
+P2-1 Meter dataset
+P2-6 Set up MLflow or W&B experiment
+tracking for all teammates
+P2-1 Tracking server
+P2-7 Vector database setup (pgvector or
+Qdrant) with collections for cascade
+cases, theft cases and documents
+P2-1 Hosted index
+P2-8 FastAPI service in Docker with predict,
+screen, mitigate and theft-score
+endpoints, deployed to Cloud Run or ECS
+P3-4, P4-5 Live API
+PRD: CascadeGuard-Sharavathi
+Page 15 of 24\n--- PAGE 16 ---\nP3: Cascade ML Lead
+ID Task Depends
+on
+Output
+P2-9 Audit log of recommendations and
+verification results (P6)
+P2-8 Audit store
+P2-
+10
+Streaming telemetry via Kafka or Pub/Sub
+with scoring consumer and alerts
+(stretch)
+P2-8 Live alert demo
+ID Task Depends on Output
+P3-1 Graph builder (bus = node, line =
+edge, per-unit normalisation) with
+PyTorch Geometric
+P2-3 (sample
+data)
+Graph dataset
+P3-
+2
+Baselines: logistic regression and
+gradient boosting on flat features
+P3-1 Baseline results
+P3-
+3
+GNN predictor for per-line failure
+probability, cascade size and load
+loss; train on IEEE 14/39 plus
+synthetic, test on IEEE 118 and
+corridor model
+P3-1 Trained model
+P3-
+4
+Calibration: temperature scaling
+and conformal intervals, with MC
+dropout as comparison
+P3-3 Calibrated predictor, ECE
+and coverage
+P3-
+5
+GNN-guided N-2/N-3 screening
+with recall and speedup against
+exhaustive simulation, plus random
+and degree-based baselines
+P3-4 Screening module
+P3-
+6
+Explainability with GNNExplainer
+and cascade path tracing; Top-K
+overlap against simulator ranking
+P3-3 Explanation module
+P3-
+7
+Generalisation study and ablations
+(with and without synthetic
+topologies)
+P3-4 Generalisation results
+P3-
+8
+Export graph embeddings of every
+scenario for retrieval
+P3-3 Embedding file for P5
+PRD: CascadeGuard-Sharavathi
+Page 16 of 24\n--- PAGE 17 ---\nP4: Theft and Loss Analytics Lead
+PRD: CascadeGuard-Sharavathi
+Page 17 of 24\n--- PAGE 18 ---\nID Task Depends
+on
+Output
+P4-1 Literature scan on electricity theft
+detection and non-technical loss;
+choose public benchmark datasets
+none Short review plus dataset
+choice
+P4-2 Technical loss estimator from the
+power-flow model per feeder or line
+segment (T1)
+P1-3 Technical loss module
+P4-3 Energy-balance analysis: feeder input vs
+summed consumption minus technical
+loss (T2)
+P4-2, P2-5 Residual loss per feeder
+P4-4 Consumer-level anomaly models:
+Isolation Forest, autoencoder, peer-
+group deviation; supervised gradient
+boosting on engineered features (T3)
+P2-5 Consumer scores
+P4-5 Fusion into one calibrated theft-
+suspicion score with confidence (T4)
+P4-3, P4-4 Hybrid scorer
+P4-6 Graph model over feeder topology
+(transformer to consumers) for
+refinement
+P4-5 Graph theft model
+P4-7 Explanations and reason codes for each
+lead (T5)
+P4-5 Reason-code module
+P4-8 Inspection prioritisation by expected
+recovered energy and effort (T6)
+P4-5 Ranked inspection list
+P4-9 Tamper-event signals (T7) and look-alike
+negatives: holidays, new appliances,
+rooftop solar
+P4-4 Hardened detector
+P4-
+10
+Theft-aware grid state: add suspected
+hidden load to the cascade model and
+measure the change in prediction
+accuracy (T9)
+P4-5, P3-3 The key combined
+experiment
+P4-11 Bias and false-positive analysis by area
+and consumer category
+P4-8 Fairness section for report
+P4-
+12
+HT line tapping detection (stretch, T8) P4-2 Tapping detector
+PRD: CascadeGuard-Sharavathi
+Page 18 of 24\n--- PAGE 19 ---\nP5: Optimization, RAG, LLM and Dashboard Lead
+16.4 Timeline and milestones
+The plan runs 8 weeks, counted from start. The core is frozen at the end of week 6, so
+streaming, weather overlay and HT tapping are out of scope unless the core is ahead of
+schedule.
+ID Task Depends on Output
+P5-1 Greedy and no-action mitigation
+baselines
+P1-2 Baseline results
+P5-2 OR-Tools mitigation model: load shedding,
+line switching, redispatch, including
+hydro ramp within reservoir limits (H2)
+P1-5 Optimizer
+P5-3 Closed-loop verification: re-simulate, fall
+back to next-best action
+P5-2 Verified mitigation
+pipeline
+P5-4 Case-based RAG: store scenarios,
+embeddings, explanations and working
+mitigations; retrieval precision@k (R8)
+P3-8, P2-7 Retrieval service
+P5-5 Warm-start the optimizer from retrieved
+cases; measure solve-time and action-
+count gain against cold start
+P5-4 RAG gain results
+P5-6 Dashboard skeleton in Streamlit and
+Plotly with two views: Grid Resilience and
+Loss and Theft
+P2-8 Dashboard shell
+P5-7 Wire up views: cascade path, confidence,
+similar cases, before/after mitigation,
+theft heatmap, inspection list
+P5-6, P3-6,
+P4-8
+Complete dashboard
+P5-8 Document corpus (NERC standards,
+operating procedures, blackout post-
+mortems) and cited LLM incident-brief
+copilot with citation checks (R11)
+P5-3 Copilot
+P5-9 Demo script, screen recordings and
+fallback demo data
+P5-7 Demo package
+P5-
+10
+Role-based views (stretch, P5
+requirement)
+P5-7 Role views
+PRD: CascadeGuard-Sharavathi
+Page 19 of 24\n--- PAGE 20 ---\nRule: phases 1 to 5 of the roadmap are the core. If a gate is missed, cut from the stretch
+list first (streaming, weather overlay, HT tapping, copilot, attack finder), never from the
+core.
+16.5 Dependencies and handoffs
+P1 to P2: cascade engine must exist before cloud generation starts (P1-2 then P2-3).
+P2 to P3: first Parquet dataset unblocks graph building (P2-3 then P3-1). P2 should
+deliver a small sample in week 2 so P3 is not waiting.
+Weeks Milestone Who
+leads
+Gate to pass
+1 Setup, contracts frozen, IEEE
+simulators running; cascade
+engine started; theft literature
+review
+P2, P1, P4 Everyone can run the repo and
+see the same data format
+2 Cascade engine and corridor
+model first cut; cloud data
+pipeline; synthetic meter data
+with injected theft
+P1, P2 Labelled dataset sample in
+Parquet; meter data ready for P4
+3 Full dataset and throughput
+benchmark; baselines and first
+GNN; technical loss and energy
+balance
+P2, P3,
+P4
+Throughput measured; GNN
+beats baseline; residual loss
+localises injected theft
+4 Calibration; N-k screening;
+consumer anomaly models;
+optimizer with verification
+P3, P4,
+P5
+ECE reported; screening recall
+measured; verified mitigation
+beats greedy
+5 Case-based RAG and warm start;
+hybrid theft scorer; explainability;
+API live
+P5, P4,
+P3, P2
+RAG gain measured; API returns
+predictions under 1 second
+6 Dashboard with both views;
+theft-aware cascade experiment;
+core frozen at week end
+P5, P4 End-to-end demo runs; core
+metrics tables filled
+7 Ablations, fairness analysis,
+report writing; attack finder and
+copilot only if core is stable
+all Report drafts complete
+8 Final report, demo rehearsal,
+buffer
+all Demo runs three times without
+errors
+PRD: CascadeGuard-Sharavathi
+Page 20 of 24\n--- PAGE 21 ---\nP3 to P5: embeddings (P3-8) feed retrieval (P5-4).
+P1 to P4: corridor model (P1-3) feeds technical loss (P4-2).
+P2 to P4: synthetic meter data (P2-5) feeds all theft models. This is on the critical path
+for P4, so P2 should do it before the Ray work if P4 is idle.
+P3 and P4 meet: the theft-aware cascade experiment (P4-10) needs a trained GNN
+from P3.
+Everyone to P5: the dashboard and demo are the integration point, so each person
+provides a working API endpoint or function by week 5.
+16.6 Work balance and flexibility
+P3 and P5 carry the most research depth; P2 carries the most infrastructure risk; P4
+carries the second pillar alone.
+Pairing for resilience: P1 backs up P3 (simulator knowledge helps ML debugging), P2
+backs up P4 (data generation), P3 backs up P5 (embeddings and retrieval).
+If someone falls behind, the backup takes the stretch tasks of the delayed person first.
+Hold a 15-minute stand-up twice a week and a 45-minute integration review every
+week.
+16.7 Definition of done (per task)
+1. Code in the repo, reviewed by a teammate, with at least a basic test.
+2. Experiment logged in MLflow or W&B with fixed seed.
+3. Metric reported in the shared results table, with the baseline it is compared against.
+4. Short write-up paragraph for the final report.
+5. Cost impact noted if it used cloud resources.
+16.8 Final report ownership
+Section Owner
+Introduction, problem statement, SDG 9, corridor
+assumptions
+P1
+Cloud architecture, data generation, throughput,
+deployment
+P2
+GNN, calibration, screening, explainability,
+generalisation
+P3
+Theft detection, ethics, fairness, combined
+experiment
+P4
+PRD: CascadeGuard-Sharavathi
+Page 21 of 24\n--- PAGE 22 ---\n17. Plan of Action: Order of Work
+The work runs in a fixed order of handoffs over 8 weeks: P2 and P1 build the foundation
+first, P3 and P4 start as soon as the first data lands, and P5 integrates everything into the
+optimizer, retrieval and dashboard.
+17.1 Step-by-step chain (who does what, in order)
+1. P2 (first, day 1): create the repo, freeze the shared data contracts, set the cloud
+budget cap, and start the experiment tracker and vector database. Hands off: repo and
+contracts to everyone.
+2. P1 (starts day 1 in parallel): get IEEE 14/39/118 running in pandapower, then build the
+cascade engine. Hands off: the working cascade engine to P2 and P5 by the end of
+week 1 or early week 2.
+3. P2 (week 2): build the parallel scenario generator on the cascade engine and push a
+small Parquet sample first, then the full dataset. In the same week, build the synthetic
+meter-data generator with injected theft. Hands off: dataset sample to P3, meter data
+to P4.
+4. P1 (weeks 2 to 3): build the reduced corridor model, seasonal scenarios and hydro
+limits. Hands off: corridor model to P2 (more data) and P4 (technical loss), hydro limits
+to P5.
+5. P3 (weeks 1 to 3): learn the graph tooling in week 1, build the graph dataset and
+baselines in week 2, train the GNN in week 3. Hands off: trained GNN to P2 (API), P1
+(attack finder) and P5 (embeddings).
+6. P4 (weeks 1 to 4): literature review and dataset choice first, then technical-loss
+estimator and energy balance, then consumer anomaly models. Hands off: theft scorer
+to P2 (API) and P5 (dashboard).
+7. P3 (week 4): calibration and N-k screening. Hands off: screening results to P1 for the
+weak-link report.
+8. P5 (weeks 1 to 4): baselines first, then the OR-Tools optimizer with hydro ramp (needs
+P1), then closed-loop verification. Hands off: verified mitigation pipeline to P2 (API) and
+the dashboard.
+9. P3 and P5 (week 5): P3 exports embeddings and explanations; P5 builds case-based
+retrieval and the warm start. Hands off: retrieval service to the dashboard.
+Section Owner
+Mitigation, RAG, copilot, dashboard, demo,
+conclusion and limitations
+P5
+PRD: CascadeGuard-Sharavathi
+Page 22 of 24\n--- PAGE 23 ---\n10. P4 (week 5): fuse feeder and consumer scores into one calibrated theft score and rank
+inspections.
+11. P2 (week 5): put all endpoints live in the API. Hands off: a working API to P5 for the
+dashboard.
+12. P5 (week 6): build the dashboard with both views and the demo data. P4 (week 6): run
+the theft-aware cascade experiment with P3's GNN. Core freezes at the end of week 6.
+13. All (weeks 7 to 8): ablations, fairness analysis, report writing, demo rehearsal. Attack
+finder (P1) and copilot (P5) only if the core is stable.
+17.2 Who is doing what each week
+Week P1: Simulation P2: Cloud and
+Data
+P3: Cascade ML P4: Theft
+Analytics
+P5: Optimization
+and Dashboard
+1 IEEE simulators,
+cascade engine
+Repo, contracts,
+cloud cap,
+tracking
+Graph tooling,
+graph builder on
+IEEE sample
+Literature review,
+dataset choice
+Baselines, OR-
+Tools skeleton
+2 Corridor model
+first cut,
+seasons
+Ray generator,
+meter-data
+generator
+Graph dataset,
+baseline models
+Technical-loss
+design, anomaly
+prototypes on
+public data
+OR-Tools model v1
+3 Hydro limits,
+synthetic
+topologies
+Full dataset,
+throughput
+benchmark,
+vector DB
+GNN training,
+generalisation test
+Technical loss,
+energy balance
+on meter data
+Closed-loop
+verification
+4 Support
+screening,
+weak-link prep
+API skeleton,
+tracked runs
+Calibration, N-k
+screening
+Consumer
+anomaly models
+Hydro ramp in
+optimizer,
+comparison vs
+greedy
+5 Weak-link
+report
+API live Explainability,
+embeddings
+export
+Fusion scorer,
+inspection
+ranking
+Case-based
+retrieval, warm
+start
+6 Test cases for
+demo, attack
+finder (if
+stable)
+Deployment,
+audit log
+Generalisation
+ablations
+Theft-aware
+cascade
+experiment
+Dashboard with
+both views, demo
+data
+7 Report
+sections, attack
+finder (if
+stable)
+Hardening, cost
+report
+Ablation tables Fairness analysis,
+report sections
+Copilot (if stable),
+integration test
+8 Final report,
+demo rehearsal
+Final report, demo
+rehearsal
+Final report, demo
+rehearsal
+Final report,
+demo rehearsal
+Final report, demo
+rehearsal
+PRD: CascadeGuard-Sharavathi
+Page 23 of 24\n--- PAGE 24 ---\n17.3 Handoff rules
+A handoff is complete only when the receiver can run it from the repo without asking
+the sender anything.
+Each handoff comes with: the code, a three-line readme, a sample input and output in
+the agreed schema, and the tracked experiment link.
+If a handoff is more than two days late, the receiver starts with a mock version in the
+agreed format, so nobody sits idle.
+Anything that changes a shared contract needs agreement from all five and a note in
+the repo.
+17.4 Deliverables checklist at the end of week 8
+Working corridor model with documented assumptions (P1)
+Labelled scenario dataset, meter dataset with injected theft, throughput numbers (P2)
+Calibrated GNN, N-k screening and explainability results (P3)
+Theft detector, inspection ranking and the theft-aware cascade result (P4)
+Verified mitigation, case-based retrieval, dashboard and demo script (P5)
+Live API, audit log and cost summary (P2)
+Final report with each section owned as in 16.8, plus one results table covering both
+pillars (all)
+PRD: CascadeGuard-Sharavathi
+Page 24 of 24
