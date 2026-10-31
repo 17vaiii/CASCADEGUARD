@@ -1,1 +1,127 @@
-# OWNER: P2 | NEEDS: P3,P4,P5 | STATUS: LOCKED (until P1 handoff done)
+openapi: 3.1.0
+info:
+  title: CascadeGuard API
+  version: 0.1.0
+  description: Local-first research API. Advice requires human review and simulator verification.
+servers:
+  - url: http://localhost:8000
+paths:
+  /health:
+    get:
+      operationId: health
+      responses:
+        '200':
+          description: Service is running
+  /api/predict:
+    post:
+      operationId: predictCascade
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DataRequest'}
+      responses:
+        '200': {description: Cascade prediction from the registered P3 model}
+        '503': {$ref: '#/components/responses/DependencyNotReady'}
+  /api/screen:
+    post:
+      operationId: screenContingencies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DataRequest'}
+      responses:
+        '200': {description: Ranked contingencies from P3 screening}
+        '503': {$ref: '#/components/responses/DependencyNotReady'}
+  /api/mitigate:
+    post:
+      operationId: planMitigation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DataRequest'}
+      responses:
+        '200': {description: Mitigation plan verified against the simulator}
+        '503': {$ref: '#/components/responses/DependencyNotReady'}
+  /api/theft-score:
+    post:
+      operationId: scoreTheftRisk
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DataRequest'}
+      responses:
+        '200': {description: Theft and loss score from the registered P4 model}
+        '503': {$ref: '#/components/responses/DependencyNotReady'}
+  /api/audit/recommendations:
+    post:
+      operationId: createRecommendationAudit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AuditRequest'}
+      responses:
+        '201':
+          description: Recommendation and data provenance recorded
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AuditCreated'}
+  /api/audit/recommendations/{audit_id}/verification:
+    post:
+      operationId: verifyRecommendation
+      parameters:
+        - {name: audit_id, in: path, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/Verification'}
+      responses:
+        '200': {description: Verification attached to the audit record}
+        '404': {description: Audit record not found}
+  /api/audit/recommendations/{audit_id}:
+    get:
+      operationId: getRecommendationAudit
+      parameters:
+        - {name: audit_id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Recommendation, verification and provenance}
+        '404': {description: Audit record not found}
+components:
+  responses:
+    DependencyNotReady:
+      description: Endpoint is available but its dependent P3, P4 or P5 implementation is not registered.
+  schemas:
+    DataRequest:
+      type: object
+      properties:
+        request_id: {type: [string, 'null']}
+        snapshot: {type: object, additionalProperties: true}
+        scenario_ids: {type: array, items: {type: string}}
+        options: {type: object, additionalProperties: true}
+    AuditRequest:
+      type: object
+      required: [recommendation]
+      properties:
+        recommendation: {oneOf: [{type: object}, {type: array}, {type: string}]}
+        data_refs: {type: array, items: {type: string}}
+        data_fingerprint: {type: [string, 'null']}
+    AuditCreated:
+      type: object
+      required: [audit_id, created_at, verification, data_fingerprint]
+      properties:
+        audit_id: {type: string}
+        created_at: {type: string, format: date-time}
+        verification: {type: [object, 'null']}
+        data_fingerprint: {type: string}
+    Verification:
+      type: object
+      required: [verified, outcome]
+      properties:
+        verified: {type: boolean}
+        outcome: {type: string}
+        details: {type: object, additionalProperties: true}

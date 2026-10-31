@@ -1,3 +1,29 @@
 {
-  "$comment": "OWNER: P2 | STATUS: LOCKED (until P1 handoff done)"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cascadeguard.local/contracts/meter_data.schema.json",
+  "title": "CascadeGuard Synthetic Interval Meter Record",
+  "description": "One synthetic interval observation. Ground-truth injected labels are for research only.",
+  "type": "object",
+  "required": [
+    "timestamp", "consumer_id", "feeder_id", "consumer_type", "metered_kwh",
+    "feeder_unmetered_kwh", "is_event", "is_suspected_loss", "theft_type",
+    "event_start", "event_end", "tamper_event", "scenario_seed", "split"
+  ],
+  "properties": {
+    "timestamp": {"type": "string", "format": "date-time"},
+    "consumer_id": {"type": "string", "pattern": "^C[0-9]{7}$", "description": "Synthetic pseudonymous identifier."},
+    "feeder_id": {"type": "string"},
+    "consumer_type": {"type": "string", "enum": ["residential", "commercial", "small_industrial"]},
+    "metered_kwh": {"type": "number", "minimum": 0},
+    "feeder_unmetered_kwh": {"type": "number", "minimum": 0},
+    "is_event": {"type": "boolean"},
+    "is_suspected_loss": {"type": "boolean"},
+    "theft_type": {"type": "string", "enum": ["none", "meter_bypass", "meter_stop", "night_tapping", "hooking", "temporary_tampering"]},
+    "event_start": {"type": ["string", "null"], "format": "date-time"},
+    "event_end": {"type": ["string", "null"], "format": "date-time"},
+    "tamper_event": {"type": "boolean"},
+    "scenario_seed": {"type": "integer"},
+    "split": {"type": "string", "enum": ["train", "validation", "test"], "description": "Stable consumer-level split; one consumer never crosses splits."}
+  },
+  "additionalProperties": false
 }

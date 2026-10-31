@@ -22,6 +22,14 @@ theft_detection/frontend/playwright-report/
 #   data/processed/dataset_major_only.parquet + splits.json (Replay / held-out cases)
 theft_detection/data/processed/study/
 
+# P2 local platform outputs (regenerate through the Makefile targets).
+data/audit/
+data/qdrant/
+data/processed/meter_readings.parquet
+data/processed/cascade_dataset.parquet
+data/processed/throughput/
+experiments/mlflow/
+
 # editor / OS
 .vscode/
 .idea/

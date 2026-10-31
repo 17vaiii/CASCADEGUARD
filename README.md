@@ -39,21 +39,16 @@ This section records what has been delivered, why it exists, and the remaining h
 
 **Purpose:** make reproducible, labelled data and shared platform interfaces available to the other workstreams, then provide scalable generation, experiment tracking, and a deployable API. P3 needs cascade scenario data; P4 needs synthetic meter data; P5 ultimately needs the service/API handoff.
 
-**Done locally:**
+**P2 status after local-phase implementation:**
 
-- Repository setup, project contracts/configuration, Makefile automation, and the GitHub Actions CI workflow for Python and frontend checks.
-- Local scenario and synthetic meter-data generation paths, plus Parquet/data artifacts used for development and handoffs. Current generated files remain on the project machine unless explicitly committed as small fixtures.
-- The Python test dependencies and RAG status test were corrected so the CI pipeline passes on `vm1`.
+- Cascade scenario generation now has sequential, joblib, and Ray backends. Parquet output defaults to local disk and supports fsspec S3/GCS URIs when their drivers and credentials are configured.
+- A repeatable throughput benchmark records sequential and Ray scenarios/hour, workload settings, elapsed time, and whether Ray ran locally or on an attached cluster. The cloud cluster comparison still needs the future cluster.
+- The new consumer interval-meter generator emits ground-truth labels for meter bypass, meter stop, night tapping, hooking, and temporary tampering; synthetic data is written locally to Parquet.
+- Local MLflow and Qdrant services are configured in Compose. The Qdrant initializer creates `cascade_cases`, `theft_cases`, and `documents`; the MLflow helper gives each workstream a shared tracking interface.
+- A local FastAPI Docker service exposes the PRD route contracts. Predict, screen, mitigation, and theft-score routes report a clear dependency-not-ready response until P3/P4/P5 register those implementations.
+- Recommendation audit records and verification outcomes persist in SQLite locally with references and a data fingerprint.
 
-**Still to do:**
-
-- Set up the AWS account resources and cost controls, then decide and configure the AWS storage/compute services for the project.
-- Move/scale scenario generation to Ray and S3, and record cluster-versus-local throughput.
-- Configure shared MLflow or Weights & Biases experiment tracking.
-- Finish and deploy the Dockerized FastAPI service (the PRD names ECS as an option) and complete the API integration with P3/P4/P5.
-- Add the planned streaming telemetry/scoring path if the core work is complete; it is a stretch item in the PRD.
-
-**Cloud timing:** AWS setup and P2 cloud work are intentionally deferred and will be done later. Until then, development, generated datasets, model outputs, and other artifacts will be stored and used locally in the project workspace. This is enough for local development and current handoffs, but cloud throughput measurements and cloud deployment remain pending. Do not upload real consumer data; the student build uses synthetic/public data.
+**Deferred:** cloud accounts, S3/GCS provisioning, a Ray cluster, Cloud Run/ECS deployment, and cloud cost/throughput measurements remain future-phase tasks. P2-10 Kafka/Pub/Sub telemetry remains a stretch item. See the [P2 local handoff](docs/p2/local_platform_handoff.md) for commands, schemas, sample records, and current boundaries. Use synthetic or public data only.
 
 ---
 

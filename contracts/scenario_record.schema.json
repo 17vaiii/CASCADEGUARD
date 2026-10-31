@@ -1,3 +1,46 @@
 {
-  "$comment": "OWNER: P2 | NEEDS: P1 | STATUS: LOCKED (until P1 handoff done)"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cascadeguard.local/contracts/scenario_record.schema.json",
+  "title": "CascadeGuard Labelled Cascade Scenario",
+  "description": "One initial contingency and its simulated cascade outcome; schema follows the P1-to-P2 handoff.",
+  "type": "object",
+  "required": [
+    "scenario_id", "seed", "season", "load_scale", "contingency_k",
+    "initial_trips", "initial_trip_names", "failed_lines", "failed_line_names",
+    "affected_buses", "cascade_depth", "load_lost_mw", "bengaluru_load_mw",
+    "bengaluru_load_lost_mw", "bengaluru_load_shed_pct", "bengaluru_blackout", "converged"
+  ],
+  "properties": {
+    "scenario_id": {"type": "string"},
+    "seed": {"type": "integer"},
+    "season": {"type": "string", "enum": ["monsoon", "post_monsoon", "summer"]},
+    "load_scale": {"type": "number", "exclusiveMinimum": 0},
+    "contingency_k": {"type": "integer", "minimum": 1},
+    "initial_trips": {"type": "array", "items": {"type": "integer"}},
+    "initial_trip_names": {"type": "array", "items": {"type": "string"}},
+    "failed_lines": {"type": "array", "items": {"type": "integer"}},
+    "failed_line_names": {"type": "array", "items": {"type": "string"}},
+    "affected_buses": {"type": "array", "items": {"type": "integer"}},
+    "cascade_depth": {"type": "integer", "minimum": 0},
+    "load_lost_mw": {"type": "number", "minimum": 0},
+    "bengaluru_load_mw": {"type": "number", "minimum": 0},
+    "bengaluru_load_lost_mw": {"type": "number", "minimum": 0},
+    "bengaluru_load_shed_pct": {"type": "number", "minimum": 0, "maximum": 100},
+    "bengaluru_blackout": {"type": "boolean"},
+    "converged": {"type": "boolean"},
+    "graph_feature_schema": {"type": "string", "const": "cascade_graph_v1"},
+    "graph_feature_timing": {"type": "string", "const": "pre_contingency"},
+    "bus_ids": {"type": "array", "items": {"type": "string"}},
+    "pre_bus_vm_pu": {"type": "array", "items": {"type": "number"}},
+    "pre_bus_p_mw": {"type": "array", "items": {"type": "number"}},
+    "pre_bus_q_mvar": {"type": "array", "items": {"type": "number"}},
+    "line_ids": {"type": "array", "items": {"type": "integer"}},
+    "line_names": {"type": "array", "items": {"type": "string"}},
+    "line_from_bus": {"type": "array", "items": {"type": "integer"}},
+    "line_to_bus": {"type": "array", "items": {"type": "integer"}},
+    "pre_line_r_ohm": {"type": "array", "items": {"type": "number"}},
+    "pre_line_x_ohm": {"type": "array", "items": {"type": "number"}},
+    "pre_line_loading_pct": {"type": "array", "items": {"type": "number"}}
+  },
+  "additionalProperties": true
 }
