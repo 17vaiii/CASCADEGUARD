@@ -136,6 +136,14 @@ Ray initially uploaded 415 MiB from local dependencies and datasets;
 Ray smoke still passes. `git diff --check` passed. Docker is unavailable, so
 Compose services, image builds, and the Qdrant container remain untested.
 
+**Pending teammate check (requires a Docker-enabled host):** run
+`make p2-platform`; confirm `GET http://localhost:8000/health` succeeds and
+MLflow responds at `http://localhost:5000`; then run `make p2-vector-init` and
+verify Qdrant contains `cascade_cases`, `theft_cases`, and `documents`. Record
+the commands, results, and any errors here before marking the local services
+verified. Docker could not be installed in this restricted workspace because
+system package paths are not writable and container privileges are unavailable.
+
 ## Current boundaries
 
 - Ray code supports local and attached runtimes; no cloud cluster was created.

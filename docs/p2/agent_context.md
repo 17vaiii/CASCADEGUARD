@@ -60,6 +60,16 @@ package and its interfaces to the existing cascade simulator in
   container builds, and the Qdrant service were not exercised. Cloud object
   storage and a remote Ray cluster also remain untested.
 
+### Pending teammate verification: Docker and Qdrant
+
+This workspace cannot install or start Docker: it has no container runtime or
+socket, the package directories are not writable, and the container has no
+privileges needed to start the daemon. On a Docker-enabled machine, run
+`make p2-platform`, verify the API health endpoint and MLflow service, then run
+`make p2-vector-init` and confirm the `cascade_cases`, `theft_cases`, and
+`documents` collections exist in Qdrant. Record the commands, results, and any
+errors here before calling the local Compose stack verified.
+
 In this workspace, invoke the Makefile suite with
 `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS='-p pytest_asyncio.plugin' make PYTHON=.venv/bin/python test`;
 the preinstalled ROS pytest plugins otherwise fail collection. Root grid checks

@@ -50,6 +50,8 @@ This section records what has been delivered, why it exists, and the remaining h
 
 **Verification boundary:** 160 Python tests and 21 frontend tests passed; the frontend production build passed. P2 API in-process HTTP smoke, audit lifecycle, sequential/Ray Parquet smoke generation, and a local MLflow-backed throughput benchmark also passed. The four model routes return expected 503 responses pending P3/P4/P5 integrations. The small same-machine benchmark measured 9,345 sequential vs. 12,762 local-Ray scenarios/hour (1.366x); this is not a cloud-cluster result. Docker/Compose and Qdrant service startup remain unverified because Docker is unavailable. See [P2 verification details](docs/p2/agent_context.md).
 
+**Pending teammate check:** on a Docker-enabled host, follow the [local platform handoff](docs/p2/local_platform_handoff.md) to start Compose, check API/MLflow, initialize Qdrant, and verify its three collections. Docker cannot be installed in the current restricted workspace.
+
 **Deferred:** cloud accounts, S3/GCS provisioning, a Ray cluster, Cloud Run/ECS deployment, and cloud cost/throughput measurements remain future-phase tasks. P2-10 Kafka/Pub/Sub telemetry remains a stretch item. The [P2 agent context](docs/p2/agent_context.md) is the recommended starting point for the next coding agent; the [P2 local handoff](docs/p2/local_platform_handoff.md) contains commands, schemas, and samples. Use synthetic or public data only.
 
 ---
