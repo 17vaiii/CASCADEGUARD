@@ -133,16 +133,16 @@ for a small summer N-1 smoke workload. This is not a cloud-cluster comparison.
 
 Ray initially uploaded 415 MiB from local dependencies and datasets;
 `theft_detection/.rayignore` now reduces the worker package to 0.51 MiB and the
-Ray smoke still passes. `git diff --check` passed. Docker is unavailable, so
-Compose services, image builds, and the Qdrant container remain untested.
+Ray smoke still passes. `git diff --check` passed.
 
-**Pending teammate check (requires a Docker-enabled host):** run
-`make p2-platform`; confirm `GET http://localhost:8000/health` succeeds and
-MLflow responds at `http://localhost:5000`; then run `make p2-vector-init` and
-verify Qdrant contains `cascade_cases`, `theft_cases`, and `documents`. Record
-the commands, results, and any errors here before marking the local services
-verified. Docker could not be installed in this restricted workspace because
-system package paths are not writable and container privileges are unavailable.
+**Docker/Qdrant verification (2026-11-01):** all three Compose containers
+built and started on Ubuntu. API `/health` and `/openapi.json`, MLflow
+`/health`, and Qdrant `/collections` returned 200. Audit create/verify/read
+passed over HTTP; model routes returned expected dependency-not-ready 503s.
+With the root requirements pin of `qdrant-client==1.12.1`,
+`make p2-vector-init` completed without a version warning and the three
+collections were present. Cloud storage and remote Ray remain untested until
+the later infrastructure phase.
 
 ## Current boundaries
 

@@ -50,25 +50,33 @@ package and its interfaces to the existing cascade simulator in
 - P2 API HTTP smoke: `/health` and `/openapi.json` returned 200; audit
   create/verify/read passed; `/api/predict`, `/api/screen`, `/api/mitigate`, and
   `/api/theft-score` returned their expected dependency-not-ready 503 responses.
+- Live Docker Compose verification on Ubuntu: all three containers built and
+  started; API `/health` and `/openapi.json` returned 200; MLflow `/health`
+  returned 200. Audit create/verify/read passed over HTTP, with 404 for an
+  unknown audit ID. The four model routes returned their expected 503
+  dependency-not-ready responses pending P3/P4/P5 integrations.
+- `make p2-vector-init` completed with Qdrant client 1.12.1 and no version
+  warning; Qdrant returned 200 and listed `cascade_cases`, `theft_cases`, and
+  `documents`. The initial client/server warning (client 1.20.0 vs server
+  1.12.1) was resolved by pinning the Python client to 1.12.1.
+- With client 1.12.1, the Qdrant adapter create/upsert/search/filter smoke and
+  existing vector DB tests passed.
 - Meter generator wrote/read Parquet with all five theft classes and
   consumer-level split isolation. Sequential and Ray cascade generators each
   wrote/read 76 rows. The local throughput smoke logged to SQLite MLflow.
 - Ray initially bundled 415 MiB from local data/frontend dependencies. The new
   `theft_detection/.rayignore` reduced the worker package to 0.51 MiB; Ray
   generation still passed.
-- `git diff --check` passed. Docker is not installed, so Compose services,
-  container builds, and the Qdrant service were not exercised. Cloud object
-  storage and a remote Ray cluster also remain untested.
+- `git diff --check` passed. Cloud object storage and a remote Ray cluster
+  remain untested.
 
-### Pending teammate verification: Docker and Qdrant
+### Docker and Qdrant verification handoff
 
-This workspace cannot install or start Docker: it has no container runtime or
-socket, the package directories are not writable, and the container has no
-privileges needed to start the daemon. On a Docker-enabled machine, run
-`make p2-platform`, verify the API health endpoint and MLflow service, then run
-`make p2-vector-init` and confirm the `cascade_cases`, `theft_cases`, and
-`documents` collections exist in Qdrant. Record the commands, results, and any
-errors here before calling the local Compose stack verified.
+The Compose stack and Qdrant collections have now been verified live on
+Ubuntu. The Codex sandbox cannot access the host Docker socket without an
+explicit elevated run, but the live checks were performed successfully. Cloud
+object storage and a remote Ray cluster still need the future infrastructure
+phase.
 
 In this workspace, invoke the Makefile suite with
 `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS='-p pytest_asyncio.plugin' make PYTHON=.venv/bin/python test`;

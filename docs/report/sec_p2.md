@@ -1,8 +1,8 @@
-<!-- OWNER: P2 | STATUS: ACTIVE (local-phase implementation; runtime validation pending) -->
+<!-- OWNER: P2 | STATUS: ACTIVE (local-phase implementation smoke-verified) -->
 # P2 — Local Data and Platform Foundation
 
 **Owner:** Person 2 (Cloud, Data and Platform Lead)
-**Status:** Local P2 implementation is in place. Runtime validation is pending. Cloud infrastructure and integrated model routes remain deferred.
+**Status:** Local P2 implementation and smoke validation are in place. Cloud infrastructure and integrated model routes remain deferred.
 
 ## Architecture
 
@@ -32,10 +32,12 @@ consumers do not cross evaluation splits. The row contract is in
 `contracts/meter_data.schema.json`.
 
 The benchmark compares identical single-machine sequential and Ray workloads
-and records scenarios/hour plus speedup. It can target an attached Ray cluster,
-but current local throughput numbers have not yet been collected in this
-environment; cluster-vs-single-machine numbers require the deferred cloud
-cluster. Use `make p2-benchmark` and retain its JSON output with the run.
+and records scenarios/hour plus speedup. A local 76-scenario summer N-1 smoke
+run measured 9,345 sequential and 12,762 local-Ray scenarios/hour (1.366x).
+These small same-machine numbers are not a representative cloud-cluster
+comparison. Repeat with the agreed workload and later measure against the
+deferred remote Ray cluster. Use `make p2-benchmark` and retain its JSON output
+with the run.
 
 ## Experiment tracking and vector storage
 
@@ -64,10 +66,13 @@ item. Full commands and the three-line handoff details are in
 
 ## Verification status
 
-As of 31 October 2026, syntax compilation, YAML/JSON parsing, static
-route-to-contract matching, SQLite audit create/verify/read, and whitespace
-checks passed. Runtime endpoint checks, Docker builds, MLflow/Qdrant startup,
-Parquet generation, and throughput runs remain outstanding because the
-available environment lacked their dependencies and Docker. Record measured
-results here only after running the continuation sequence in
-`docs/p2/agent_context.md`.
+As of 1 November 2026, all 160 Python tests and 21 frontend tests passed, and
+the frontend production build succeeded. Local API, audit, meter/cascade Parquet,
+Ray, and SQLite MLflow smoke checks passed. A teammate verified the Compose
+API, MLflow, and Qdrant containers; API health returned 200 and all three
+collections initialized. The four model routes return expected dependency-not-
+ready responses pending P3/P4/P5 integrations. The initial Qdrant client/server
+version warning prompted a pin to client 1.12.1 to match the configured server;
+the adapter create/upsert/search/filter smoke and vector DB tests pass on that
+client. Cloud storage, a remote Ray cluster, and Cloud Run/ECS deployment remain
+future-phase work. See `docs/p2/agent_context.md` for the full check record.
