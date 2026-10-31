@@ -119,20 +119,28 @@ Example audit request:
 The generated `audit_id` is used to submit a verification result through
 `POST /api/audit/recommendations/{audit_id}/verification`.
 
-## Verification status (2026-10-31)
+## Verification status (2026-11-01)
 
-Static checks passed: Python syntax compilation for changed modules, YAML and
-JSON parsing, API path inventory matched to OpenAPI, SQLite audit
-create/verify/read, and `git diff --check`. No HTTP server, Docker build, Ray
-job, meter dataset, Parquet generation, or throughput benchmark was run. At
-that check the active Python environment did not have FastAPI, Pydantic,
-pandas, PyArrow, pandapower, Ray, MLflow, or `qdrant-client`; Docker was also
-unavailable. Install dependencies and repeat runtime checks before marking
-these components operational. The project test suite was not run.
+The root requirements installed into `.venv` and `pip check` passed. All 160
+Python tests and all 21 frontend tests passed; the frontend production build
+passed. The P2 API in-process HTTP smoke returned 200 for health/OpenAPI, exercised audit
+create/verify/read, and confirmed the four model routes return expected 503
+dependency-not-ready responses pending P3/P4/P5. Meter Parquet generation
+passed for all five labels and split isolation. Sequential and Ray cascade
+generation passed with 76 rows each. A same-machine benchmark logged to local
+SQLite MLflow: 9,345 sequential vs. 12,762 local-Ray scenarios/hour (1.366x)
+for a small summer N-1 smoke workload. This is not a cloud-cluster comparison.
+
+Ray initially uploaded 415 MiB from local dependencies and datasets;
+`theft_detection/.rayignore` now reduces the worker package to 0.51 MiB and the
+Ray smoke still passes. `git diff --check` passed. Docker is unavailable, so
+Compose services, image builds, and the Qdrant container remain untested.
 
 ## Current boundaries
 
 - Ray code supports local and attached runtimes; no cloud cluster was created.
+- Local Ray generation was exercised. Attached/remote Ray and cloud scaling were
+  not exercised.
 - S3/GCS writers are configured through fsspec but were not exercised without
   cloud credentials and the deferred infrastructure.
 - API Docker packaging and local compose services are provided. Cloud Run/ECS

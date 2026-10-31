@@ -32,6 +32,9 @@ data/processed/meter_readings.parquet
 data/processed/cascade_dataset.parquet
 data/processed/throughput/
 experiments/mlflow/
+experiments/*.db*
+experiments/mlartifacts/
+mlruns/
 
 # editor / OS
 .vscode/

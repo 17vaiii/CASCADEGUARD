@@ -1,0 +1,11 @@
+# Ray workers need the simulator source and configuration, not local outputs.
+.git
+.venv
+venv
+**/__pycache__
+**/.pytest_cache
+frontend
+data
+figures
+notebooks
+docs

@@ -32,28 +32,39 @@ package and its interfaces to the existing cascade simulator in
 
 | PRD task | Implemented in code/config | Still needed |
 |---|---|---|
-| **P2-3** Ray scenario pipeline | `theft_detection/simdata/cascade_scenarios.py` supports sequential, joblib, and Ray; root adapter writes labelled Parquet and accepts output URIs. | Install runtime dependencies; generate a fresh root artifact and verify its schema. Do not overwrite the existing demo artifact under `theft_detection/data/processed/`. |
-| **P2-4** throughput | `src/cascadeguard/data/benchmark_scenarios.py` compares sequential with Ray and writes JSON; it logs a run to MLflow when reachable. | Run locally first. Cluster-versus-single-machine numbers require the later Ray cluster. Record actual results in `docs/report/sec_p2.md`. |
-| **P2-5** meter data | `src/cascadeguard/data/meter_generator.py` emits five injected classes, normal rows, hidden feeder load separately from meter readings, and consumer-level train/validation/test splits. | Generate Parquet and inspect class counts/schema; pass artifact and card to P4. |
-| **P2-6** tracking | Local MLflow Compose service and `cascadeguard.common.tracking.tracked_run` helper. Throughput benchmark records metrics/run link if server is reachable. | Start service, log a smoke experiment and provide its local link; have P3/P4/P5 use the helper. No experiment link exists yet. |
+| **P2-3** Ray scenario pipeline | Sequential and Ray generation both wrote/read 76-row labelled Parquet smoke datasets; Ray worker package reduced from 415 MiB to 0.51 MiB using `theft_detection/.rayignore`. | Cloud-cluster generation still needs the future cluster. Do not overwrite the existing demo artifact under `theft_detection/data/processed/`. |
+| **P2-4** throughput | Local benchmark wrote the JSON report and logged it to SQLite-backed MLflow. On the same 76-scenario summer N-1 smoke workload: sequential 9,345 scenarios/hour; local Ray 12,762/hour; 1.366x observed speedup. | These are a small local smoke result, not a cluster benchmark. Repeat with representative workloads and later compare against the cloud cluster; record final results in `docs/report/sec_p2.md`. |
+| **P2-5** meter data | Generated and re-read a 960-row Parquet smoke dataset; all five injection labels and consumer-level split isolation were checked. | Generate the agreed full dataset and hand the artifact/schema to P4. Smoke output was temporary under `/tmp`, not delivered as a dataset. |
+| **P2-6** tracking | `tracked_run` and benchmark logging both passed with local SQLite MLflow. | Compose MLflow UI/service was not tested because Docker is unavailable. P3/P4/P5 still need to adopt the shared helper. |
 | **P2-7** vector database | Local Qdrant Compose service, adapter, and initializer for `cascade_cases`, `theft_cases`, `documents`. | Start Qdrant and run `make p2-vector-init`. Confirm/coordinate vector dimensions (default 128) with P3/P4/P5 before ingesting. |
-| **P2-8** API | Docker packaging and routes for `/api/predict`, `/api/screen`, `/api/mitigate`, `/api/theft-score`; OpenAPI contract provided. | Runtime-test API. The four model routes deliberately return 503 until P3/P4/P5 register their implementations. This is an integration dependency, not a working model response. Cloud deployment is deferred. |
-| **P2-9** audit | SQLite create/read/update-verification implementation and API routes; stores advice, references/fingerprint, verification, and timestamp. | HTTP-test full audit lifecycle. Integrate every future recommendation-producing route with the audit call. No raw meter payload should be stored. |
+| **P2-8** API | FastAPI health/OpenAPI and audit routes passed in-process HTTP smoke checks. | The four model routes deliberately return 503 until P3/P4/P5 register their implementations. Docker build and cloud deployment remain unverified/deferred. |
+| **P2-9** audit | API smoke passed create, verification, read, and missing-record 404; stores advice, references/fingerprint, verification, and timestamp. | Integrate every future recommendation-producing route with the audit call. No raw meter payload should be stored. |
 | **P2-10** streaming | Not implemented. | Stretch item; defer unless core tasks are complete and schedule allows. Existing demo WebSocket replay is not Kafka/Pub/Sub scoring. |
 
-## Validation actually completed
+## Validation actually completed (2026-11-01)
 
-The prior verification checked Python syntax compilation, YAML and JSON
-parsing, static route-to-OpenAPI path agreement, a SQLite audit create/verify/
-read lifecycle, and whitespace (`git diff --check`). These passed after fixing
-malformed YAML in `contracts/openapi.yaml`.
+- Root Python requirements installed in the ignored `.venv`; `pip check` passed.
+- Repository Python suites passed: root grid 6, demo grid 27, simulator 23,
+  ML 41, legacy API 30, future contracts 6, RAG 25, vector DB 2 (**160 total**).
+  Frontend Vitest passed 21 tests and the production TypeScript/Vite build passed.
+- P2 API HTTP smoke: `/health` and `/openapi.json` returned 200; audit
+  create/verify/read passed; `/api/predict`, `/api/screen`, `/api/mitigate`, and
+  `/api/theft-score` returned their expected dependency-not-ready 503 responses.
+- Meter generator wrote/read Parquet with all five theft classes and
+  consumer-level split isolation. Sequential and Ray cascade generators each
+  wrote/read 76 rows. The local throughput smoke logged to SQLite MLflow.
+- Ray initially bundled 415 MiB from local data/frontend dependencies. The new
+  `theft_detection/.rayignore` reduced the worker package to 0.51 MiB; Ray
+  generation still passed.
+- `git diff --check` passed. Docker is not installed, so Compose services,
+  container builds, and the Qdrant service were not exercised. Cloud object
+  storage and a remote Ray cluster also remain untested.
 
-Runtime validation is outstanding. The active Python environment lacked
-FastAPI, Pydantic, pandas, PyArrow, pandapower, Ray, MLflow, and `qdrant-client`;
-Docker was unavailable. Consequently, no HTTP endpoint, Docker image/service,
-Ray task, Parquet generation, MLflow UI, or Qdrant collection was exercised.
-No project pytest suite was run. Do not describe P2 runtime behavior as
-verified until these checks pass.
+In this workspace, invoke the Makefile suite with
+`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS='-p pytest_asyncio.plugin' make PYTHON=.venv/bin/python test`;
+the preinstalled ROS pytest plugins otherwise fail collection. Root grid checks
+were run separately with `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTHONPATH=src
+.venv/bin/python -m pytest tests -q`.
 
 ## Recommended continuation order
 

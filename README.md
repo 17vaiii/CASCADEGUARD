@@ -39,16 +39,16 @@ This section records what has been delivered, why it exists, and the remaining h
 
 **Purpose:** make reproducible, labelled data and shared platform interfaces available to the other workstreams, then provide scalable generation, experiment tracking, and a deployable API. P3 needs cascade scenario data; P4 needs synthetic meter data; P5 ultimately needs the service/API handoff.
 
-**P2 status after local-phase implementation (code/configuration complete; runtime validation pending):**
+**P2 status after local-phase implementation and smoke validation:**
 
 - Cascade scenario generation now has sequential, joblib, and Ray backends. Parquet output defaults to local disk and supports fsspec S3/GCS URIs when their drivers and credentials are configured.
 - A repeatable throughput benchmark records sequential and Ray scenarios/hour, workload settings, elapsed time, and whether Ray ran locally or on an attached cluster. The cloud cluster comparison still needs the future cluster.
-- The consumer interval-meter generator emits ground-truth labels for meter bypass, meter stop, night tapping, hooking, and temporary tampering, with consumer-level train/validation/test splits. Its Parquet output has not yet been generated in this environment.
+- The consumer interval-meter generator emits ground-truth labels for meter bypass, meter stop, night tapping, hooking, and temporary tampering, with consumer-level train/validation/test splits. A 960-row Parquet smoke dataset covering all five classes and split isolation passed; the full agreed dataset still needs to be generated and handed to P4.
 - Local MLflow and Qdrant services are configured in Compose. The Qdrant initializer creates `cascade_cases`, `theft_cases`, and `documents`; the MLflow helper gives each workstream a shared tracking interface.
 - A local FastAPI Docker service exposes the PRD route contracts. Predict, screen, mitigation, and theft-score routes intentionally return dependency-not-ready responses until P3/P4/P5 register those implementations. Health and audit routes are implemented.
 - Recommendation audit records and verification outcomes persist in SQLite locally with references and a data fingerprint.
 
-**Verification boundary:** syntax compilation, YAML/JSON parsing, static API-to-OpenAPI route matching, SQLite audit create/verify/read, and `git diff --check` passed. HTTP service startup, Docker builds, Qdrant/MLflow startup, Ray generation, meter Parquet generation, and throughput measurements have not run: the available Python environment lacked the runtime dependencies and Docker was unavailable. Do not describe the API or generated datasets as runtime-verified until those steps pass.
+**Verification boundary:** 160 Python tests and 21 frontend tests passed; the frontend production build passed. P2 API in-process HTTP smoke, audit lifecycle, sequential/Ray Parquet smoke generation, and a local MLflow-backed throughput benchmark also passed. The four model routes return expected 503 responses pending P3/P4/P5 integrations. The small same-machine benchmark measured 9,345 sequential vs. 12,762 local-Ray scenarios/hour (1.366x); this is not a cloud-cluster result. Docker/Compose and Qdrant service startup remain unverified because Docker is unavailable. See [P2 verification details](docs/p2/agent_context.md).
 
 **Deferred:** cloud accounts, S3/GCS provisioning, a Ray cluster, Cloud Run/ECS deployment, and cloud cost/throughput measurements remain future-phase tasks. P2-10 Kafka/Pub/Sub telemetry remains a stretch item. The [P2 agent context](docs/p2/agent_context.md) is the recommended starting point for the next coding agent; the [P2 local handoff](docs/p2/local_platform_handoff.md) contains commands, schemas, and samples. Use synthetic or public data only.
 
