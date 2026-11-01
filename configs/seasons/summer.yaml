@@ -1,1 +1,12 @@
 # OWNER: P1 | STATUS: ACTIVE
+name: summer
+months: [3, 4, 5]
+description: "Low reservoir, restricted hydro, peak Bengaluru demand"
+reservoir_level_pct: 35.0
+max_generation_mw: 350.0
+min_generation_mw: 100.0
+ramp_rate_mw_per_min: 8.0
+daily_energy_limit_mwh: 6000
+inflow_cumecs: 30.0
+corridor_load_scale: 1.15
+source: assumed

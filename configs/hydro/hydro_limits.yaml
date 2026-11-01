@@ -1,1 +1,17 @@
 # OWNER: P1 | STATUS: ACTIVE
+# Sharavathi Hydro Generation — Seasonal Constraints
+# Linganamakki reservoir and generation station parameters.
+
+reservoir:
+  name: Linganamakki
+  full_capacity_mcm: 4482        # million cubic meters (source: assumed)
+  min_operating_mcm: 1500        # dead storage level (source: assumed)
+  turbine_capacity_mw: 1035      # 10 × 103.5 MW units (source: assumed)
+  efficiency: 0.88               # overall hydro efficiency (source: assumed)
+  head_m: 335                    # gross head in meters (source: assumed)
+  source: assumed
+
+limits:
+  max_ramp_up_mw_per_min: 15.0
+  max_ramp_down_mw_per_min: 20.0
+  max_daily_energy_mwh: 18000

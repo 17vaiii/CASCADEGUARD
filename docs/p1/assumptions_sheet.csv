@@ -1,2 +1,20 @@
-# OWNER: P1 | STATUS: ACTIVE
-parameter_id,parameter_name,value,unit,status,source_id,notes
+Parameter,Value,Unit,Source,Notes
+Base Voltage,220,kV,assumed,Transmission corridor rating from Sharavathi to Bengaluru
+Corridor Length,361,km,assumed,Distance along Sharavathi-Shimoga-Sira-Nelamangala-Peenya
+Number of Primary Substations,5,-,assumed,SHARAVATHI (slack) SHIMOGA SIRA_KBCROSS NELAMANGALA PEENYA
+Virtual Tap Bus Spacing,10,km,assumed,Placement for candidate unmetered extraction taps
+Circuits per Section,2,-,assumed,Parallel dual-circuit lines (unfolded Circuit A and Circuit B)
+Line R per km (single ckt),0.040,ohm/km,assumed,Twin-bundle ACSR 220 kV equivalent
+Line X per km (single ckt),0.360,ohm/km,assumed,Twin-bundle ACSR 220 kV equivalent
+Line C per km (single ckt),10.0,nF/km,assumed,Bundling shunt susceptance
+Max Current per Line,0.80,kA,assumed,Thermal relay limit per single circuit
+Peak Peenya (Bengaluru) Demand,180,MW,assumed,Major load termination bus
+Peak Nelamangala Demand,80,MW,assumed,Intermediate bulk distribution center
+Linganamakki Full Reservoir,4482,MCM,assumed,Million cubic meters full storage
+Linganamakki Dead Storage,1500,MCM,assumed,Minimum operating level
+Turbine Nameplate Capacity,1035,MW,assumed,10 units x 103.5 MW
+Hydro Ramp Up Limit,15,MW/min,assumed,Governor response limit
+Monsoon Generation Limit,900,MW,assumed,Peak hydro dispatch during monsoon
+Summer Generation Limit,350,MW,assumed,Conservation dispatch during dry summer
+Summer Demand Multiplier,1.15,-,assumed,High cooling and agricultural pumping demand
+Monsoon Demand Multiplier,0.85,-,assumed,Reduced agricultural irrigation demand

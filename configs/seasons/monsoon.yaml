@@ -1,1 +1,12 @@
 # OWNER: P1 | STATUS: ACTIVE
+name: monsoon
+months: [6, 7, 8, 9, 10]
+description: "High inflow from Western Ghats, reservoir filling, maximum hydro available"
+reservoir_level_pct: 85.0
+max_generation_mw: 900.0
+min_generation_mw: 200.0
+ramp_rate_mw_per_min: 15.0
+daily_energy_limit_mwh: 18000
+inflow_cumecs: 450.0
+corridor_load_scale: 0.85
+source: assumed

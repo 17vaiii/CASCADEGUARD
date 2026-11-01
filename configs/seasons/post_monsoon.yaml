@@ -1,1 +1,12 @@
 # OWNER: P1 | STATUS: ACTIVE
+name: post_monsoon
+months: [11, 12, 1, 2]
+description: "Moderate reservoir, controlled discharge, balanced operation"
+reservoir_level_pct: 65.0
+max_generation_mw: 600.0
+min_generation_mw: 150.0
+ramp_rate_mw_per_min: 12.0
+daily_energy_limit_mwh: 12000
+inflow_cumecs: 120.0
+corridor_load_scale: 0.95
+source: assumed

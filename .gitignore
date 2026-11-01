@@ -30,6 +30,7 @@ data/audit/
 data/qdrant/
 data/processed/meter_readings.parquet
 data/processed/cascade_dataset.parquet
+data/processed/scenario_embeddings.parquet
 data/processed/throughput/
 experiments/mlflow/
 experiments/*.db*
