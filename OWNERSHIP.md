@@ -46,11 +46,11 @@ This file defines the strict file and folder ownership across the 5 project role
 | `tests/data/`, `tests/api/` | P2 | - | Locked |
 | `experiments/`, `data/`, `docker/Dockerfile.api` | P2 | - | Locked |
 | `docs/report/sec_p2.md` | P2 | - | Locked |
-| `contracts/graph_tensor_format.md` | P3 | P2 | Locked |
-| `configs/model/` | P3 | P2 | Locked |
-| `src/cascadeguard/cascade_ml/` | P3 | P1,P2 | Locked |
-| `tests/cascade_ml/` | P3 | - | Locked |
-| `docs/report/sec_p3.md` | P3 | - | Locked |
+| `contracts/graph_tensor_format.md` | P3 | P2 | Active |
+| `configs/model/` | P3 | P2 | Active |
+| `src/cascadeguard/cascade_ml/` | P3 | P1,P2 | Active |
+| `tests/cascade_ml/` | P3 | - | Active |
+| `docs/report/sec_p3.md` | P3 | - | Active |
 | `configs/theft/models.yaml` | P4 | P2 | Locked |
 | `src/cascadeguard/theft/` | P4 | P1,P2,P3 | Locked |
 | `tests/theft/` | P4 | - | Locked |

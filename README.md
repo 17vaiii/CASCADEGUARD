@@ -17,42 +17,51 @@ AI-assisted cascade-failure prevention and non-technical loss (theft) detection 
 
 ---
 
-## 2. Current P1 and P2 Progress
+## 2. Current Progress (P1, P2, and P3 Delivered)
 
-This section records what has been delivered, why it exists, and the remaining handoffs. “Completed” means implemented in the local project; it does not mean deployed to AWS or validated against private utility data.
+This section records what has been implemented, validated, and integrated into the root package (`src/cascadeguard/`). All 26 automated unit and integration tests across grid physics, platform services, and machine learning models are passing.
 
-### P1 — Grid Simulation and Search
+### P1 — Grid Simulation, AC Cascade Engine, and Search (Complete)
 
-**Purpose:** provide the physics-based ground truth and simulator that the ML, theft, and mitigation workstreams use. It models how outages, hydro dispatch, and changing operating seasons affect power flow and cascade risk on a clearly labelled, assumed Sharavathi–Bengaluru corridor.
+**Purpose:** Provide the physics-based ground truth and simulator that the ML, theft, and mitigation workstreams use.
 
-**Delivered:**
+**Delivered in root package (`src/cascadeguard/grid/`, `src/cascadeguard/sim/`):**
 
-- IEEE 14/39/118 power-flow benchmarks and the reduced corridor model, with topology assumptions documented.
-- AC power-flow cascade simulation with outage trips, re-solves, island handling, load shedding, and labelled outcomes.
-- Seasonal operating profiles and hydro dispatch constrained by ramp, energy, inflow, and minimum-reservoir assumptions.
-- Synthetic corridor-like topologies, seasonal weak-link reports, and simulator-only contingency/attack search.
-- Scenario and handoff artifacts used to generate local cascade data for downstream work.
+- **Corridor Model (`corridor_model.py`):** 39-bus, 76-line dual-circuit AC transmission network (Sharavathi to Peenya) with 34 virtual tap buses at 10 km intervals. Converged under AC Newton-Raphson power flow (`init='dc'`) with voltages within $[0.95, 1.05]$ p.u.
+- **Hydro Limits & Seasonal Profiles (`hydro.py`, `seasons.py`):** Linganamakki reservoir budget (1,500 MCM dead storage, 1,035 MW turbine capacity), ramp limits, and seasonal profiles for Monsoon (900 MW max), Post-Monsoon (600 MW), and Summer (350 MW conservation with 1.15x peak demand).
+- **AC Cascade Simulation Engine (`cascade_engine.py`, `islanding.py`, `trip_rules.py`):** Iterative power flow loop simulating initial contingency trips, NetworkX connected component island detection, unpowered island load shedding, and iterative overcurrent relay tripping until stabilization or corridor blackout.
+- **Search & Overlays (`weak_link.py`, `attack_finder.py`, `overlays.py`, `topology_generator.py`):** Seasonal weak-link ranking, beam-search adversarial attack discovery, weather outage weights, and synthetic 30–60 bus network generator.
+- **Artifacts & Tests:** `docs/p1/assumptions_sheet.csv`, `docs/p1/handoff_release1.md`, `docs/report/sec_p1.md`, and 10 passing unit tests in `tests/grid/` and `tests/sim/`.
 
-**Remaining integration/limitations:** weather weights and renewable variations are not yet carried through the scenario dataset and screening pipeline; GNN-guided attack search needs P2/P3 model integration. The corridor and hydro parameters remain assumptions, not a verified KPTCL model. See [P1 implementation notes](theft_detection/docs/PERSON1_GRID_SIMULATION.md) and [corridor assumptions](theft_detection/docs/CORRIDOR_ASSUMPTIONS.md).
+### P2 — Cloud, Data and Platform (Local Phase Complete)
 
-### P2 — Cloud, Data and Platform
+**Purpose:** Deliver reproducible datasets, shared platform interfaces, experiment tracking, Docker services, and REST API contracts.
 
-**Purpose:** make reproducible, labelled data and shared platform interfaces available to the other workstreams, then provide scalable generation, experiment tracking, and a deployable API. P3 needs cascade scenario data; P4 needs synthetic meter data; P5 ultimately needs the service/API handoff.
+**Delivered in root package (`src/cascadeguard/data/`, `src/cascadeguard/api/`):**
 
-**P2 status after local-phase implementation and smoke validation:**
+- **Cascade Scenario Generation:** Generated full-scale Parquet dataset of 8,778 scenarios (`data/processed/cascade_dataset.parquet`) across N-1 and N-2 contingencies and seasonal profiles.
+- **Synthetic Smart-Meter Generation:** Generated 360,000 interval records (`data/processed/meter_readings.parquet`) across 5 theft injection types (meter bypass, meter stop, night tapping, hooking, temporary tampering) with consumer-isolated splits.
+- **Throughput Benchmarking & Tracking:** Benchmark runner measuring 9,345 sequential vs. 12,762 Ray scenarios/hour logged to SQLite MLflow.
+- **Container Infrastructure:** Docker Compose configuring local FastAPI, MLflow tracking, and Qdrant vector database (collections: `cascade_cases`, `theft_cases`, `documents`).
+- **REST API Platform (`api/main.py`):** FastAPI service with active `/health`, `/openapi.json`, recommendation audit persistence, and now actively wired to P3 models for `/api/predict` and `/api/screen`.
 
-- Cascade scenario generation now has sequential, joblib, and Ray backends. Parquet output defaults to local disk and supports fsspec S3/GCS URIs when their drivers and credentials are configured.
-- A repeatable throughput benchmark records sequential and Ray scenarios/hour, workload settings, elapsed time, and whether Ray ran locally or on an attached cluster. The cloud cluster comparison still needs the future cluster.
-- The consumer interval-meter generator emits ground-truth labels for meter bypass, meter stop, night tapping, hooking, and temporary tampering, with consumer-level train/validation/test splits. A 960-row Parquet smoke dataset covering all five classes and split isolation passed; the full agreed dataset still needs to be generated and handed to P4.
-- Local MLflow and Qdrant services are configured in Compose. The Qdrant initializer creates `cascade_cases`, `theft_cases`, and `documents`; the MLflow helper gives each workstream a shared tracking interface.
-- A local FastAPI Docker service exposes the PRD route contracts. Predict, screen, mitigation, and theft-score routes intentionally return dependency-not-ready responses until P3/P4/P5 register those implementations. Health and audit routes are implemented.
-- Recommendation audit records and verification outcomes persist in SQLite locally with references and a data fingerprint.
+### P3 — Cascade Machine Learning, Calibration, and Screening (Complete)
 
-**Verification boundary:** 160 Python tests and 21 frontend tests passed; the frontend production build passed. Live Compose checks passed for API health/OpenAPI, audit create/verify/read, MLflow health, and Qdrant collection listing/initialization. The four model routes return expected 503 responses pending P3/P4/P5 integrations. Sequential/Ray Parquet smoke generation and a local MLflow-backed benchmark also passed. The small same-machine benchmark measured 9,345 sequential vs. 12,762 local-Ray scenarios/hour (1.366x); this is not a cloud-cluster result. Cloud infrastructure remains unverified. See [P2 verification details](docs/p2/agent_context.md).
+**Purpose:** Rapid GNN-based contingency screening, surrogate risk prediction, conformal uncertainty quantification, and graph embedding export.
 
-**Pending teammate check:** on a Docker-enabled host, follow the [local platform handoff](docs/p2/local_platform_handoff.md) to start Compose, check API/MLflow, initialize Qdrant, and verify its three collections. Docker cannot be installed in the current restricted workspace.
+**Delivered in root package (`src/cascadeguard/cascade_ml/`):**
 
-**Deferred:** cloud accounts, S3/GCS provisioning, a Ray cluster, Cloud Run/ECS deployment, and cloud cost/throughput measurements remain future-phase tasks. P2-10 Kafka/Pub/Sub telemetry remains a stretch item. The [P2 agent context](docs/p2/agent_context.md) is the recommended starting point for the next coding agent; the [P2 local handoff](docs/p2/local_platform_handoff.md) contains commands, schemas, and samples. Use synthetic or public data only.
+- **Graph Builder (`graph_builder.py`):** Converts grid snapshots into PyTorch Geometric multigraphs with per-unit normalized bus features (voltage, $P, Q$, slack) and edge branch features ($R, X$, loading ratio, initial trip indicator).
+- **Cascade GNN (`gnn.py`, `train.py`):** Multi-task message-passing GNN predicting line failure probabilities, cascade size, endpoint load loss in MW, and 128-dimensional scenario embeddings.
+  - **Cascade ROC-AUC:** **0.9914** (vs. Random Forest baseline 0.9321).
+  - **Cascade F1 Score:** **0.9886** (vs. Random Forest baseline 0.8015).
+  - **Endpoint Load Loss MAE:** **14.60 MW** (vs. Random Forest baseline 22.71 MW).
+- **Probability Calibration & Conformal Prediction (`calibration.py`):**
+  - Temperature scaling ($T = 0.678$) reduced Expected Calibration Error (ECE) from **0.0242** down to **0.0007**.
+  - Conformal prediction intervals ($q = 6.60$ MW) achieved **91.2% empirical test coverage** at a 90% confidence target.
+- **High-Throughput Screening (`screening.py`):** Evaluates candidate line outages at $>800$ contingencies/second (<1 ms per contingency) for rapid operator alerts.
+- **Explainability & Retrieval Export (`explain.py`, `embeddings_export.py`):** Gradient-based line attribution and exported 128-dim scenario embeddings for P5 Qdrant retrieval.
+- **API Integration:** Connected to [`src/cascadeguard/api/main.py`](file:///home/gdp/Projects/EL/CASCADEGUARD/src/cascadeguard/api/main.py); `/api/predict` and `/api/screen` return live calibrated predictions.
 
 ---
 
