@@ -1,1 +1,20 @@
-# OWNER: P2 | STATUS: LOCKED (until P1 handoff done)
+# OWNER: P2 | STATUS: PREPARED (cloud account and cluster intentionally deferred)
+# This file records the adapter settings to carry into the future cloud phase.
+# Current generation defaults to a local Ray runtime and local Parquet files.
+runtime_env:
+  working_dir: .
+  env_vars:
+    PYTHONPATH: theft_detection:src
+    CASCADEGUARD_STORAGE_MODE: object_store
+    CASCADEGUARD_DATA_URI: "s3://<bucket>/cascadeguard/scenarios/"
+    MLFLOW_TRACKING_URI: "<team-mlflow-url>"
+    QDRANT_URL: "<managed-qdrant-url>"
+    CASCADEGUARD_AUDIT_DATABASE_URL: "<managed-database-url>"
+
+cluster:
+  address_env: RAY_ADDRESS
+  workers: 4
+  autoscaling: true
+  shutdown_when_idle: true
+  object_store: s3 # alternatives: gcs
+  credentials: use the cloud provider's workload identity; do not put keys here

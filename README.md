@@ -39,21 +39,20 @@ This section records what has been delivered, why it exists, and the remaining h
 
 **Purpose:** make reproducible, labelled data and shared platform interfaces available to the other workstreams, then provide scalable generation, experiment tracking, and a deployable API. P3 needs cascade scenario data; P4 needs synthetic meter data; P5 ultimately needs the service/API handoff.
 
-**Done locally:**
+**P2 status after local-phase implementation and smoke validation:**
 
-- Repository setup, project contracts/configuration, Makefile automation, and the GitHub Actions CI workflow for Python and frontend checks.
-- Local scenario and synthetic meter-data generation paths, plus Parquet/data artifacts used for development and handoffs. Current generated files remain on the project machine unless explicitly committed as small fixtures.
-- The Python test dependencies and RAG status test were corrected so the CI pipeline passes on `vm1`.
+- Cascade scenario generation now has sequential, joblib, and Ray backends. Parquet output defaults to local disk and supports fsspec S3/GCS URIs when their drivers and credentials are configured.
+- A repeatable throughput benchmark records sequential and Ray scenarios/hour, workload settings, elapsed time, and whether Ray ran locally or on an attached cluster. The cloud cluster comparison still needs the future cluster.
+- The consumer interval-meter generator emits ground-truth labels for meter bypass, meter stop, night tapping, hooking, and temporary tampering, with consumer-level train/validation/test splits. A 960-row Parquet smoke dataset covering all five classes and split isolation passed; the full agreed dataset still needs to be generated and handed to P4.
+- Local MLflow and Qdrant services are configured in Compose. The Qdrant initializer creates `cascade_cases`, `theft_cases`, and `documents`; the MLflow helper gives each workstream a shared tracking interface.
+- A local FastAPI Docker service exposes the PRD route contracts. Predict, screen, mitigation, and theft-score routes intentionally return dependency-not-ready responses until P3/P4/P5 register those implementations. Health and audit routes are implemented.
+- Recommendation audit records and verification outcomes persist in SQLite locally with references and a data fingerprint.
 
-**Still to do:**
+**Verification boundary:** 160 Python tests and 21 frontend tests passed; the frontend production build passed. Live Compose checks passed for API health/OpenAPI, audit create/verify/read, MLflow health, and Qdrant collection listing/initialization. The four model routes return expected 503 responses pending P3/P4/P5 integrations. Sequential/Ray Parquet smoke generation and a local MLflow-backed benchmark also passed. The small same-machine benchmark measured 9,345 sequential vs. 12,762 local-Ray scenarios/hour (1.366x); this is not a cloud-cluster result. Cloud infrastructure remains unverified. See [P2 verification details](docs/p2/agent_context.md).
 
-- Set up the AWS account resources and cost controls, then decide and configure the AWS storage/compute services for the project.
-- Move/scale scenario generation to Ray and S3, and record cluster-versus-local throughput.
-- Configure shared MLflow or Weights & Biases experiment tracking.
-- Finish and deploy the Dockerized FastAPI service (the PRD names ECS as an option) and complete the API integration with P3/P4/P5.
-- Add the planned streaming telemetry/scoring path if the core work is complete; it is a stretch item in the PRD.
+**Pending teammate check:** on a Docker-enabled host, follow the [local platform handoff](docs/p2/local_platform_handoff.md) to start Compose, check API/MLflow, initialize Qdrant, and verify its three collections. Docker cannot be installed in the current restricted workspace.
 
-**Cloud timing:** AWS setup and P2 cloud work are intentionally deferred and will be done later. Until then, development, generated datasets, model outputs, and other artifacts will be stored and used locally in the project workspace. This is enough for local development and current handoffs, but cloud throughput measurements and cloud deployment remain pending. Do not upload real consumer data; the student build uses synthetic/public data.
+**Deferred:** cloud accounts, S3/GCS provisioning, a Ray cluster, Cloud Run/ECS deployment, and cloud cost/throughput measurements remain future-phase tasks. P2-10 Kafka/Pub/Sub telemetry remains a stretch item. The [P2 agent context](docs/p2/agent_context.md) is the recommended starting point for the next coding agent; the [P2 local handoff](docs/p2/local_platform_handoff.md) contains commands, schemas, and samples. Use synthetic or public data only.
 
 ---
 
@@ -67,6 +66,8 @@ cascadeguard-sharavathi/
 ├── .github/
 │   └── workflows/ci.yml                           # P2 (CI testing pipeline)
 ├── configs/
+│   ├── platform/
+│   │   └── local.yaml                            # P2 local settings and cloud adapter seams
 │   ├── cloud/
 │   │   └── ray_cluster.yaml                       # P2 (Ray cluster configuration)
 │   ├── grids/
@@ -100,8 +101,12 @@ cascadeguard-sharavathi/
 │   └── samples/.gitkeep                           # P2 (Minimal checked-in sample data)
 ├── docker/
 │   ├── Dockerfile.api                             # P2 (FastAPI application container)
+│   ├── Dockerfile.mlflow                           # P2 (local experiment tracking service)
 │   └── Dockerfile.dashboard                       # P5 [needs P2] (Streamlit dashboard container)
 ├── docs/
+│   ├── p2/
+│   │   ├── agent_context.md                       # P2 current state and continuation notes
+│   │   └── local_platform_handoff.md              # P2 local commands and handoff contracts
 │   ├── p1/                                        # P1 Design Artifacts & Specifications
 │   │   ├── assumptions_sheet.csv                  # P1 (Tracked parameters: given/assumed/measured)
 │   │   ├── handoff_release1.md                    # P1 (Release 1 handoff documentation)
@@ -222,9 +227,11 @@ cascadeguard-sharavathi/
 ├── .env.example                                   # P2 (Environment variables template)
 ├── .gitignore                                     # P2 (Git exclusion rules)
 ├── CODEOWNERS                                     # P2 (GitHub code review owners mapping)
+├── docker-compose.yml                             # P2 (local API, MLflow and Qdrant services)
 ├── Makefile                                       # P2 (Build and automation commands)
 ├── OWNERSHIP.md                                   # P1 (Project role mapping & boundaries)
 ├── README.md                                      # ALL (Project overview and architecture)
+├── requirements-api.txt                           # P2 (small API container dependencies)
 ├── pyproject.toml                                 # P2 (Python packaging configuration)
 └── requirements.txt                               # P2 (Core dependencies)
 ```
@@ -235,4 +242,4 @@ The previously developed full-stack demonstration is now stored in `theft_detect
 
 The ten original design notes are preserved under `docs/specifications/`. The root `src/cascadeguard/` package remains the role-based project implementation area; the imported demo is a self-contained application module and has not yet been refactored into that package.
 
-Dependency folders and machine-specific files (`.venv`, `node_modules`, caches, `.env`, and runtime logs) are intentionally not copied. Install dependencies from `theft_detection/requirements.txt` and `theft_detection/frontend/package-lock.json` when setting up a fresh machine.
+Dependency folders and machine-specific files (`.venv`, `node_modules`, caches, `.env`, and runtime logs) are intentionally not copied. For the imported demo, install dependencies from `theft_detection/requirements.txt` and `theft_detection/frontend/package-lock.json`. For the PRD P2 platform work, use `make p2-install` from the repository root.

@@ -160,6 +160,9 @@ def generate_cascade_dataset(
     load_scale_points: list[float] | None = None,
     seed: int = 42,
     n_jobs: int = 1,
+    backend: str = "joblib",
+    output_uri: str | None = None,
+    ray_address: str | None = None,
 ) -> pd.DataFrame:
     """
     Generate a full cascade contingency dataset.
@@ -167,7 +170,7 @@ def generate_cascade_dataset(
     Parameters
     ----------
     out_dir : Path
-        Output directory (default: data/processed/).
+        Local output directory (default: data/processed/).
     seasons : list[str]
         Which seasons to simulate (default: all).
     k_range : tuple
@@ -178,6 +181,15 @@ def generate_cascade_dataset(
         Random seed for reproducibility.
     n_jobs : int
         Number of parallel workers (1 = sequential).
+    backend : str
+        ``sequential``, ``joblib`` (default) or ``ray``. Ray supports both a
+        local runtime and an attached Ray cluster.
+    output_uri : str, optional
+        Full Parquet destination. Local paths are the default; fsspec URIs
+        such as ``s3://`` and ``gs://`` work when their optional drivers are
+        installed.
+    ray_address : str, optional
+        Ray cluster address. When omitted, Ray starts a local runtime.
 
     Returns
     -------
@@ -185,7 +197,11 @@ def generate_cascade_dataset(
         Full dataset of cascade outcomes.
     """
     out_dir = out_dir or _DEFAULT_OUT
-    out_dir.mkdir(parents=True, exist_ok=True)
+    if backend not in {"sequential", "joblib", "ray"}:
+        raise ValueError("backend must be sequential, joblib or ray")
+    if output_uri is None:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        output_uri = str(out_dir / "cascade_dataset.parquet")
     if k_range[0] < 1 or k_range[1] < k_range[0] or k_range[1] > 3:
         raise ValueError("k_range must satisfy 1 <= minimum <= maximum <= 3")
     if load_scale_points is not None and any(float(x) <= 0 for x in load_scale_points):
@@ -229,7 +245,30 @@ def generate_cascade_dataset(
 
     # Run (sequential or parallel)
     rows: list[dict] = []
-    if n_jobs > 1:
+    if backend == "ray":
+        try:
+            import ray
+        except ImportError as exc:
+            raise RuntimeError("Ray backend selected; install the 'ray' optional dependency") from exc
+        started_here = not ray.is_initialized()
+        simulator_root = str(Path(__file__).resolve().parents[1])
+        runtime_env = {"working_dir": simulator_root,
+                       "env_vars": {"PYTHONPATH": "."}}
+        if started_here:
+            ray.init(address=ray_address or None,
+                     num_cpus=max(1, n_jobs) if not ray_address else None,
+                     runtime_env=runtime_env,
+                     ignore_reinit_error=True,
+                     include_dashboard=False, log_to_driver=False)
+        remote_worker = ray.remote(runtime_env=runtime_env)(_run_contingency)
+        refs = [remote_worker.remote(w) for w in work]
+        try:
+            results = ray.get(refs)
+            rows = [r for r in results if r is not None]
+        finally:
+            if started_here:
+                ray.shutdown()
+    elif backend == "joblib" and n_jobs > 1:
         try:
             from joblib import Parallel, delayed
             results = Parallel(n_jobs=n_jobs, backend="loky")(
@@ -239,7 +278,7 @@ def generate_cascade_dataset(
         except ImportError:
             log.warning("joblib not installed; falling back to sequential")
             rows = [r for w in work if (r := _run_contingency(w)) is not None]
-    else:
+    elif backend in ("sequential", "joblib"):
         for i, w in enumerate(work):
             r = _run_contingency(w)
             if r is not None:
@@ -251,9 +290,10 @@ def generate_cascade_dataset(
     log.info(f"  Completed {len(rows)} scenarios in {elapsed:.1f}s")
 
     df = pd.DataFrame(rows)
-    out_path = out_dir / "cascade_dataset.parquet"
-    df.to_parquet(out_path, index=False)
-    log.info(f"  Saved → {out_path}")
+    df.attrs["scenarios_attempted"] = len(work)
+    df.attrs["scenarios_written"] = len(rows)
+    _write_parquet(df, output_uri)
+    log.info(f"  Saved → {output_uri}")
 
     # Summary statistics
     if len(df) > 0:
@@ -262,6 +302,26 @@ def generate_cascade_dataset(
         log.info(f"  Max load shed: {df.load_shed_pct.max():.1f}%")
 
     return df
+
+
+def _write_parquet(frame: pd.DataFrame, destination: str) -> None:
+    """Write to local disk by default; use fsspec for future object storage."""
+    from urllib.parse import urlparse
+    if not urlparse(destination).scheme or destination.startswith("file://"):
+        path = Path(destination.removeprefix("file://"))
+        path.parent.mkdir(parents=True, exist_ok=True)
+        frame.to_parquet(path, index=False)
+        return
+    try:
+        import fsspec
+    except ImportError as exc:
+        raise RuntimeError("Object storage requires fsspec plus s3fs or gcsfs") from exc
+    fs, fs_path = fsspec.core.url_to_fs(destination)
+    parent = fs_path.rsplit("/", 1)[0] if "/" in fs_path else ""
+    if parent:
+        fs.makedirs(parent, exist_ok=True)
+    with fs.open(fs_path, "wb") as stream:
+        frame.to_parquet(stream, index=False)
 
 
 if __name__ == "__main__":
@@ -273,6 +333,9 @@ if __name__ == "__main__":
     parser.add_argument("--k-max", type=int, default=2)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--jobs", type=int, default=1)
+    parser.add_argument("--backend", choices=("sequential", "joblib", "ray"), default="joblib")
+    parser.add_argument("--ray-address", default=None, help="Ray cluster address; omit for a local Ray runtime")
+    parser.add_argument("--output-uri", default=None, help="Output file path/URI; defaults to local processed data")
     args = parser.parse_args()
 
     generate_cascade_dataset(
@@ -280,5 +343,8 @@ if __name__ == "__main__":
         k_range=(1, args.k_max),
         seed=args.seed,
         n_jobs=args.jobs,
+        backend=args.backend,
+        output_uri=args.output_uri,
+        ray_address=args.ray_address,
     )
 

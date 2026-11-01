@@ -130,6 +130,33 @@ all: install grid-baseline grid-viz test
 	@echo "WF1 complete. Proceed to WF2 (make data)."
 
 # ---------------------------------------------------------------------------
+# P2 platform work (local now; cloud adapter settings are in configs/platform)
+# Run these with Python 3.12 and dependencies from requirements.txt installed.
+# ---------------------------------------------------------------------------
+.PHONY: p2-install p2-meter-data p2-cascade-data p2-benchmark p2-platform p2-api p2-vector-init
+
+p2-install:                  ## Install root P2 pipeline/platform dependencies
+	$(PIP) install -r requirements.txt
+
+p2-meter-data:              ## Generate consumer interval data and five labelled injection types
+	PYTHONPATH=src $(PYTHON) -m cascadeguard.data.meter_generator --output data/processed/meter_readings.parquet
+
+p2-cascade-data:            ## Generate labelled N-1/N-2 cascade data with local Ray
+	PYTHONPATH=src $(PYTHON) -m cascadeguard.data.scenario_generator --backend ray --workers 4 --k-max 2
+
+p2-benchmark:               ## Compare single-machine and local/attached Ray throughput
+	PYTHONPATH=src $(PYTHON) -m cascadeguard.data.benchmark_scenarios --k-max 2 --workers 4
+
+p2-platform:                ## Start local API, MLflow and Qdrant
+	docker compose --profile local-platform up --build
+
+p2-api:                     ## Run local P2 API without Docker
+	PYTHONPATH=src $(PYTHON) -m uvicorn cascadeguard.api.main:app --reload --port 8000
+
+p2-vector-init:              ## Create cascade, theft and document collections in local Qdrant
+	PYTHONPATH=src $(PYTHON) -m cascadeguard.retrieval.case_store
+
+# ---------------------------------------------------------------------------
 # Help
 # ---------------------------------------------------------------------------
 .PHONY: help

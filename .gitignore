@@ -1,5 +1,8 @@
-# secrets — copy theft_detection/.env.example to .env locally
-.env
+# Secrets — keep the committed templates, ignore local variants such as
+# .env, .env.local, and .env.production at every directory level.
+.env*
+!.env.example
+!**/.env.example
 
 # Python
 __pycache__/
@@ -21,6 +24,17 @@ theft_detection/frontend/playwright-report/
 #   data/models/ (trained models + metrics), data/raw/baseline_states.parquet,
 #   data/processed/dataset_major_only.parquet + splits.json (Replay / held-out cases)
 theft_detection/data/processed/study/
+
+# P2 local platform outputs (regenerate through the Makefile targets).
+data/audit/
+data/qdrant/
+data/processed/meter_readings.parquet
+data/processed/cascade_dataset.parquet
+data/processed/throughput/
+experiments/mlflow/
+experiments/*.db*
+experiments/mlartifacts/
+mlruns/
 
 # editor / OS
 .vscode/

@@ -1,0 +1,36 @@
+# P2 local phase. URI-based settings have cloud equivalents for the later phase.
+storage:
+  mode: local
+  artifact_root: data/processed
+  cascade_dataset: data/processed/cascade_dataset.parquet
+  meter_dataset: data/processed/meter_readings.parquet
+  throughput_report: data/processed/throughput/throughput_benchmark.json
+  future_object_store_uri: "s3://<bucket>/cascadeguard/" # or gs://<bucket>/cascadeguard/
+  object_store_backend: fsspec
+
+ray:
+  address: local
+  workers: 4
+  dashboard: false
+  cloud_cluster_config: ../cloud/ray_cluster.yaml
+
+tracking:
+  provider: mlflow
+  tracking_uri: ${MLFLOW_TRACKING_URI:-http://localhost:5000}
+  experiment_prefix: cascadeguard
+  local_artifact_root: experiments/mlflow/artifacts
+  future_artifact_uri: "s3://<bucket>/cascadeguard/mlflow/"
+
+vector_store:
+  provider: qdrant
+  url: ${QDRANT_URL:-http://localhost:6333}
+  vector_size: 128
+  distance: cosine
+  collections:
+    - cascade_cases
+    - theft_cases
+    - documents
+
+audit:
+  database: data/audit/recommendations.sqlite3
+  future_database_url_env: CASCADEGUARD_AUDIT_DATABASE_URL

@@ -1,1 +1,17 @@
-# OWNER: P2 | STATUS: LOCKED (until P1 handoff done)
+# P2 packaging metadata. requirements.txt is the canonical dependency list.
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cascadeguard-sharavathi"
+version = "0.1.0"
+description = "Local-first cascade risk and theft detection platform"
+requires-python = ">=3.12,<3.13"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+where = ["src"]

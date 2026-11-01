@@ -1,0 +1,48 @@
+services:
+  api:
+    profiles: ["local-platform"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      CASCADEGUARD_AUDIT_DB: /workspace/data/audit/recommendations.sqlite3
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_VECTOR_SIZE: ${QDRANT_VECTOR_SIZE:-128}
+    volumes:
+      - ./data:/workspace/data
+    depends_on:
+      - mlflow
+      - qdrant
+
+  mlflow:
+    profiles: ["local-platform"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mlflow
+    command:
+      - mlflow
+      - server
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+      - --backend-store-uri
+      - sqlite:////mlflow/mlflow.db
+      - --artifacts-destination
+      - /mlflow/artifacts
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - ./experiments/mlflow:/mlflow
+
+  qdrant:
+    profiles: ["local-platform"]
+    image: ${QDRANT_IMAGE:-qdrant/qdrant:v1.12.1}
+    ports:
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
+    volumes:
+      - ./data/qdrant:/qdrant/storage
