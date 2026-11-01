@@ -28,7 +28,7 @@ enableMocking().then(() =>
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter>
           {USE_MOCKS && (
             <div role="status" className="bg-serious/20 px-4 py-1 text-center text-xs font-semibold text-ink-1">
               MOCK API (MSW) — fixed example responses, backend not used
