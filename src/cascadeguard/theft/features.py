@@ -14,6 +14,7 @@ Works on any ``[n_consumers, n_periods]`` read matrix, e.g. the P4 simulator or 
 from __future__ import annotations
 
 from typing import Any
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -54,8 +55,11 @@ def _max_run(mask: np.ndarray) -> np.ndarray:
 
 
 def _row_corr(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    a = a - np.nanmean(a, axis=1, keepdims=True)
-    b = b - np.nanmean(b, axis=1, keepdims=True)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning, message="Mean of empty slice")
+        with np.errstate(all="ignore"):
+            a = a - np.nanmean(a, axis=1, keepdims=True)
+            b = b - np.nanmean(b, axis=1, keepdims=True)
     num = np.nansum(a * b, axis=1)
     den = np.sqrt(np.nansum(a**2, axis=1) * np.nansum(b**2, axis=1))
     with np.errstate(invalid="ignore", divide="ignore"):
@@ -80,18 +84,20 @@ def consumer_features(reads: np.ndarray, timestamps: pd.DatetimeIndex, history_e
     hour = (timestamps.hour.to_numpy() + timestamps.minute.to_numpy() / 60.0)[:n_days * per_day]
     h, r = slice(0, hist_days * per_day), slice(hist_days * per_day, None)
 
-    with np.errstate(invalid="ignore", divide="ignore"):
-        hist_mean = np.nanmean(x[:, h], axis=1)
-        recent_mean = np.nanmean(x[:, r], axis=1)
-        safe_hist = np.where(hist_mean > ZERO_KWH, hist_mean, np.nan)
-        f = pd.DataFrame(index=pd.Index(meta.consumer_id.to_numpy(), name="consumer_id"))
-        f["f_hist_mean_kwh"] = hist_mean
-        f["f_recent_mean_kwh"] = recent_mean
-        f["f_ratio_recent"] = recent_mean / safe_hist
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning, message="Mean of empty slice")
+        with np.errstate(all="ignore"):
+            hist_mean = np.nanmean(x[:, h], axis=1)
+            recent_mean = np.nanmean(x[:, r], axis=1)
+            safe_hist = np.where(hist_mean > ZERO_KWH, hist_mean, np.nan)
+            f = pd.DataFrame(index=pd.Index(meta.consumer_id.to_numpy(), name="consumer_id"))
+            f["f_hist_mean_kwh"] = hist_mean
+            f["f_recent_mean_kwh"] = recent_mean
+            f["f_ratio_recent"] = recent_mean / safe_hist
 
-        daily = x.reshape(n_c, n_days, per_day)
-        daily_valid = (~np.isnan(daily)).sum(axis=2)
-        daily_mean = np.where(daily_valid > per_day // 2, np.nanmean(daily, axis=2), np.nan)
+            daily = x.reshape(n_c, n_days, per_day)
+            daily_valid = (~np.isnan(daily)).sum(axis=2)
+            daily_mean = np.where(daily_valid > per_day // 2, np.nanmean(daily, axis=2), np.nan)
         roll = _rolling_mean(daily_mean, int(cfg["rolling_days"]))
         first_recent = max(0, hist_days - int(cfg["rolling_days"]) + 1)
         f["f_min7_ratio"] = np.nanmin(roll[:, first_recent:], axis=1) / safe_hist
