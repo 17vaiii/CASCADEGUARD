@@ -1,0 +1,982 @@
+{
+  "seed": 42,
+  "scale": 2.0,
+  "disclaimer": "Simulated data. Scores are leads for field inspection, not evidence of theft; a human inspection is required before any action.",
+  "dataset": {
+    "feeders": 48,
+    "dts": 264,
+    "dts_metered": 163,
+    "consumers": 5281,
+    "periods": 2160,
+    "history_end": 1080,
+    "theft_by_type": {
+      "none": 5017,
+      "hooking": 53,
+      "meter_stop": 53,
+      "meter_bypass": 53,
+      "night_tapping": 53,
+      "temporary_tampering": 52
+    },
+    "lookalikes": {
+      "none": 4753,
+      "rooftop_solar": 176,
+      "new_appliance": 176,
+      "vacancy": 176
+    },
+    "comm_gaps": 158,
+    "split": {
+      "train": 3696,
+      "validation": 793,
+      "test": 792
+    }
+  },
+  "technical_loss": {
+    "corridor": {
+      "transmission_loss_mw": 13.032513176942473,
+      "generation_mw": 373.03251317690916,
+      "transmission_loss_pct": 3.4936668297226565
+    },
+    "feeder_curve_max_rel_error": 0.0020802334435892087,
+    "split_history": {
+      "window": "history",
+      "input_mwh": 14185.854725852967,
+      "metered_mwh": 13535.454251305098,
+      "technical_loss_pct_est": 2.5893575348279896,
+      "technical_loss_pct_true": 2.599777918759314,
+      "ntl_pct_est": 1.9954946796991273,
+      "ntl_pct_true": 0.0,
+      "technical_loss_est_error_pct_points": -0.010420383931324384
+    },
+    "split_recent": {
+      "window": "recent",
+      "input_mwh": 15367.722579948426,
+      "metered_mwh": 14461.789769951592,
+      "technical_loss_pct_est": 2.6778859587152195,
+      "technical_loss_pct_true": 2.6905889786135617,
+      "ntl_pct_est": 3.2171502464468995,
+      "ntl_pct_true": 1.244994778859693,
+      "technical_loss_est_error_pct_points": -0.012703019898342216
+    }
+  },
+  "energy_balance": {
+    "feeder_localisation": {
+      "n_nodes": 48,
+      "n_theft_nodes": 42,
+      "top_n": 5,
+      "theft_nodes_in_top_n": 5,
+      "top_n_precision": 1.0,
+      "top_n_recall": 1.0,
+      "flagged": 26,
+      "flag_precision": 1.0,
+      "flag_recall": 0.6190476190476191,
+      "spearman_z_vs_true_ntl": 0.8981070530203453
+    },
+    "dt_localisation": {
+      "n_nodes": 163,
+      "n_theft_nodes": 77,
+      "top_n": 10,
+      "theft_nodes_in_top_n": 10,
+      "top_n_precision": 1.0,
+      "top_n_recall": 1.0,
+      "flagged": 71,
+      "flag_precision": 0.9014084507042254,
+      "flag_recall": 0.8311688311688312,
+      "spearman_z_vs_true_ntl": 0.7704729420728696
+    },
+    "ntl_ratio_by_substation": [
+      {
+        "substation": "NELAMANGALA",
+        "metered_kwh": 3761043.784840445,
+        "est_hidden_kwh": 25232.664842374692,
+        "true_hidden_kwh": 24289.1171875,
+        "est_ntl_ratio": 0.006708952696610294,
+        "true_ntl_ratio": 0.006458078814557172
+      },
+      {
+        "substation": "PEENYA",
+        "metered_kwh": 7297557.592903318,
+        "est_hidden_kwh": 120671.94901190836,
+        "true_hidden_kwh": 118791.640625,
+        "est_ntl_ratio": 0.0165359365069292,
+        "true_ntl_ratio": 0.016278273807735583
+      },
+      {
+        "substation": "SHIMOGA",
+        "metered_kwh": 2274259.664646679,
+        "est_hidden_kwh": 28103.12383138033,
+        "true_hidden_kwh": 28728.380859375,
+        "est_ntl_ratio": 0.012357042719546421,
+        "true_ntl_ratio": 0.012631970441175696
+      },
+      {
+        "substation": "SIRA_KBCROSS",
+        "metered_kwh": 1128928.727561149,
+        "est_hidden_kwh": 16998.282041086066,
+        "true_hidden_kwh": 19518.224609375,
+        "est_ntl_ratio": 0.01505700194006742,
+        "true_ntl_ratio": 0.017289155757016367
+      }
+    ],
+    "feeders_with_unbilled_new_connection": 6
+  },
+  "consumer_models_test": {
+    "threshold_baseline": {
+      "n": 792,
+      "positives": 40,
+      "k": 40,
+      "auroc": 0.7873670212765957,
+      "pr_auc": 0.3883382202709931,
+      "precision_at_k": 0.325,
+      "recall_at_k": 0.325,
+      "r_precision": 0.325,
+      "random_precision_at_k": 0.050505050505050504,
+      "recall_at_k_by_type": {
+        "hooking": 0.0,
+        "meter_bypass": 0.375,
+        "meter_stop": 1.0,
+        "night_tapping": 0.0,
+        "temporary_tampering": 0.25
+      }
+    },
+    "tamper_only": {
+      "n": 792,
+      "positives": 40,
+      "k": 40,
+      "auroc": 0.6651761968085107,
+      "pr_auc": 0.36705347379900893,
+      "precision_at_k": 0.375,
+      "recall_at_k": 0.375,
+      "r_precision": 0.375,
+      "random_precision_at_k": 0.050505050505050504,
+      "recall_at_k_by_type": {
+        "hooking": 0.0,
+        "meter_bypass": 0.375,
+        "meter_stop": 0.625,
+        "night_tapping": 0.0,
+        "temporary_tampering": 0.875
+      }
+    },
+    "isolation_forest": {
+      "n": 792,
+      "positives": 40,
+      "k": 40,
+      "auroc": 0.718251329787234,
+      "pr_auc": 0.2931406947846965,
+      "precision_at_k": 0.225,
+      "recall_at_k": 0.225,
+      "r_precision": 0.225,
+      "random_precision_at_k": 0.050505050505050504,
+      "recall_at_k_by_type": {
+        "hooking": 0.0,
+        "meter_bypass": 0.125,
+        "meter_stop": 1.0,
+        "night_tapping": 0.0,
+        "temporary_tampering": 0.0
+      }
+    },
+    "autoencoder": {
+      "n": 792,
+      "positives": 40,
+      "k": 40,
+      "auroc": 0.740093085106383,
+      "pr_auc": 0.4051058013767092,
+      "precision_at_k": 0.425,
+      "recall_at_k": 0.425,
+      "r_precision": 0.425,
+      "random_precision_at_k": 0.050505050505050504,
+      "recall_at_k_by_type": {
+        "hooking": 0.0,
+        "meter_bypass": 0.5,
+        "meter_stop": 1.0,
+        "night_tapping": 0.0,
+        "temporary_tampering": 0.625
+      }
+    },
+    "peer_deviation": {
+      "n": 792,
+      "positives": 40,
+      "k": 40,
+      "auroc": 0.7814162234042553,
+      "pr_auc": 0.37073032090922126,
+      "precision_at_k": 0.375,
+      "recall_at_k": 0.375,
+      "r_precision": 0.375,
+      "random_precision_at_k": 0.050505050505050504,
+      "recall_at_k_by_type": {
+        "hooking": 0.0,
+        "meter_bypass": 0.75,
+        "meter_stop": 1.0,
+        "night_tapping": 0.0,
+        "temporary_tampering": 0.125
+      }
+    },
+    "feeder_residual_only": {
+      "n": 792,
+      "positives": 40,
+      "k": 40,
+      "auroc": 0.7757313829787235,
+      "pr_auc": 0.11025923357095187,
+      "precision_at_k": 0.1,
+      "recall_at_k": 0.1,
+      "r_precision": 0.1,
+      "random_precision_at_k": 0.050505050505050504,
+      "recall_at_k_by_type": {
+        "hooking": 0.0,
+        "meter_bypass": 0.25,
+        "meter_stop": 0.125,
+        "night_tapping": 0.125,
+        "temporary_tampering": 0.0
+      }
+    },
+    "gbm": {
+      "n": 792,
+      "positives": 40,
+      "k": 40,
+      "auroc": 0.9170545212765957,
+      "pr_auc": 0.7107530002796986,
+      "precision_at_k": 0.65,
+      "recall_at_k": 0.65,
+      "r_precision": 0.65,
+      "random_precision_at_k": 0.050505050505050504,
+      "recall_at_k_by_type": {
+        "hooking": 0.125,
+        "meter_bypass": 1.0,
+        "meter_stop": 1.0,
+        "night_tapping": 0.125,
+        "temporary_tampering": 1.0
+      }
+    },
+    "graph_sage": {
+      "n": 792,
+      "positives": 40,
+      "k": 40,
+      "auroc": 0.9018617021276596,
+      "pr_auc": 0.6740092570174494,
+      "precision_at_k": 0.625,
+      "recall_at_k": 0.625,
+      "r_precision": 0.625,
+      "random_precision_at_k": 0.050505050505050504,
+      "recall_at_k_by_type": {
+        "hooking": 0.125,
+        "meter_bypass": 0.875,
+        "meter_stop": 1.0,
+        "night_tapping": 0.125,
+        "temporary_tampering": 1.0
+      }
+    },
+    "fusion": {
+      "n": 792,
+      "positives": 40,
+      "k": 40,
+      "auroc": 0.9189162234042553,
+      "pr_auc": 0.7164410133886777,
+      "precision_at_k": 0.65,
+      "recall_at_k": 0.65,
+      "r_precision": 0.65,
+      "random_precision_at_k": 0.050505050505050504,
+      "recall_at_k_by_type": {
+        "hooking": 0.125,
+        "meter_bypass": 1.0,
+        "meter_stop": 1.0,
+        "night_tapping": 0.125,
+        "temporary_tampering": 1.0
+      }
+    }
+  },
+  "calibration": {
+    "temperature": 0.911457931153031,
+    "ece_fusion_uncalibrated": 0.012249052110242577,
+    "ece_fusion_calibrated": 0.005546286872993375,
+    "ece_gbm_raw": 0.021405116360663914,
+    "conformal_alpha": 0.1,
+    "conformal_q": 0.06513275005994973,
+    "conformal_coverage_test": 0.8863636363636364,
+    "confidence_mix_test": {
+      "low": 701,
+      "medium": 78,
+      "high": 13
+    },
+    "fusion_coefficients": {
+      "s_isolation_forest": -0.21874531252965151,
+      "s_autoencoder": 0.3168843381389974,
+      "s_peer_deviation": 0.3518189381912359,
+      "s_threshold_baseline": -0.06856225770407705,
+      "s_gbm": 1.1743203833528166,
+      "f_tamper_strong_recent": 0.2541486420176743,
+      "f_tamper_total_recent": 0.04087622291333879,
+      "f_feeder_z": 0.22932294517512233,
+      "f_dt_z": 0.2803545796583367,
+      "f_dt_metered": -0.20613616108332475
+    },
+    "venn_abers": {
+      "mean_width_all_test": 0.017079781831650893,
+      "mean_width_top_k": 0.11187973206703856,
+      "mean_low": 0.04502501541054514,
+      "mean_high": 0.062104797242196044,
+      "observed_rate": 0.050505050505050504
+    }
+  },
+  "graph_model": {
+    "best_val_pr_auc": 0.6471809835931212,
+    "best_epoch": 45
+  },
+  "gbm_permutation_importance_top": {
+    "f_min7_ratio": 0.13076835960113647,
+    "f_dt_z": 0.038380427728313536,
+    "f_dt_change_pct": 0.016009126624051184,
+    "f_feeder_change_pct": 0.010673608612609598,
+    "f_solar_signature": 0.007087413116764996,
+    "f_step_drop": 0.006433097367425344,
+    "f_profile_corr": 0.005481855005973135,
+    "f_cv_recent": 0.0053554920670598975,
+    "f_tamper_strong_recent": 0.004156188077040079,
+    "f_feeder_z": 0.003761692472285105,
+    "f_offday_ratio": 0.0018767648616583755,
+    "f_tamper_total_recent": 0.0014020514659252026
+  },
+  "consumer_models_crossfit": {
+    "fusion": {
+      "n": 5281,
+      "positives": 264,
+      "k": 40,
+      "auroc": 0.887455378984181,
+      "pr_auc": 0.6809109662287416,
+      "precision_at_k": 1.0,
+      "recall_at_k": 0.15151515151515152,
+      "r_precision": 0.6174242424242424,
+      "random_precision_at_k": 0.049990532096193904,
+      "recall_at_k_by_type": {
+        "hooking": 0.0,
+        "meter_bypass": 0.22641509433962265,
+        "meter_stop": 0.32075471698113206,
+        "night_tapping": 0.0,
+        "temporary_tampering": 0.21153846153846154
+      }
+    },
+    "threshold_baseline": {
+      "n": 5281,
+      "positives": 264,
+      "k": 40,
+      "auroc": 0.7704267611333587,
+      "pr_auc": 0.38534854761854787,
+      "precision_at_k": 1.0,
+      "recall_at_k": 0.15151515151515152,
+      "r_precision": 0.3333333333333333,
+      "random_precision_at_k": 0.049990532096193904,
+      "recall_at_k_by_type": {
+        "hooking": 0.0,
+        "meter_bypass": 0.0,
+        "meter_stop": 0.7547169811320755,
+        "night_tapping": 0.0,
+        "temporary_tampering": 0.0
+      }
+    },
+    "ece_fusion": 0.007500501989196828
+  },
+  "lookalike_false_flags": {
+    "new_appliance": {
+      "n": 176,
+      "false_flag_rate_at_0_5": 0.0,
+      "in_top_n_where_n_is_thefts": 1
+    },
+    "none": {
+      "n": 4489,
+      "false_flag_rate_at_0_5": 0.00022276676319893073,
+      "in_top_n_where_n_is_thefts": 68
+    },
+    "rooftop_solar": {
+      "n": 176,
+      "false_flag_rate_at_0_5": 0.005681818181818182,
+      "in_top_n_where_n_is_thefts": 5
+    },
+    "vacancy": {
+      "n": 176,
+      "false_flag_rate_at_0_5": 0.017045454545454544,
+      "in_top_n_where_n_is_thefts": 27
+    }
+  },
+  "inspection": {
+    "capacity_k": 40,
+    "strategies": [
+      {
+        "strategy": "random",
+        "visits": 40.0,
+        "hits": 1.4,
+        "precision": 0.035,
+        "network_leads": 0.85,
+        "recovered_kwh": 700.1785326004028,
+        "recovered_kwh_per_visit": 17.504463315010067,
+        "travel_km": 115.07291194603938,
+        "net_value_inr": -13975.573070448168
+      },
+      {
+        "strategy": "rule_based",
+        "visits": 40.0,
+        "hits": 40.0,
+        "precision": 1.0,
+        "network_leads": 0.0,
+        "recovered_kwh": 48997.12109375,
+        "recovered_kwh_per_visit": 1224.92802734375,
+        "travel_km": 110.96070697633027,
+        "net_value_inr": 324205.8299818417
+      },
+      {
+        "strategy": "score",
+        "visits": 40.0,
+        "hits": 40.0,
+        "precision": 1.0,
+        "network_leads": 0.0,
+        "recovered_kwh": 24284.04296875,
+        "recovered_kwh_per_visit": 607.10107421875,
+        "travel_km": 121.6089354220934,
+        "net_value_inr": 150948.07739569768
+      },
+      {
+        "strategy": "expected_value",
+        "visits": 40.0,
+        "hits": 35.0,
+        "precision": 0.875,
+        "network_leads": 13.0,
+        "recovered_kwh": 105926.109375,
+        "recovered_kwh_per_visit": 2648.152734375,
+        "travel_km": 112.17889312103216,
+        "net_value_inr": 722678.2932969742
+      },
+      {
+        "strategy": "value_route",
+        "visits": 40.0,
+        "hits": 35.0,
+        "precision": 0.875,
+        "network_leads": 13.0,
+        "recovered_kwh": 105869.390625,
+        "recovered_kwh_per_visit": 2646.734765625,
+        "travel_km": 110.23183318315185,
+        "net_value_inr": 722329.9385454212
+      }
+    ]
+  },
+  "case_retrieval": {
+    "same_outcome_precision_at_k": 0.375,
+    "theft_precedent_share": 0.4800000000000001,
+    "k": 5
+  },
+  "lead_list": {
+    "n": 40,
+    "hits": 35,
+    "consumer_leads": 27
+  },
+  "fairness": {
+    "k": 40,
+    "threshold": 0.5,
+    "operating_points": {
+      "top_k": {
+        "overall_fpr": 0.0,
+        "by_group": [
+          {
+            "group_by": "area",
+            "group": "peri_urban",
+            "n": 2106,
+            "positives": 78,
+            "flag_rate": 0.0052231718898385565,
+            "fpr": 0.0,
+            "tpr": 0.14102564102564102,
+            "precision": 1.0,
+            "base_rate": 0.037037037037037035
+          },
+          {
+            "group_by": "area",
+            "group": "rural",
+            "n": 674,
+            "positives": 45,
+            "flag_rate": 0.013353115727002967,
+            "fpr": 0.0,
+            "tpr": 0.2,
+            "precision": 1.0,
+            "base_rate": 0.06676557863501484
+          },
+          {
+            "group_by": "area",
+            "group": "urban",
+            "n": 2501,
+            "positives": 141,
+            "flag_rate": 0.007996801279488205,
+            "fpr": 0.0,
+            "tpr": 0.14184397163120568,
+            "precision": 1.0,
+            "base_rate": 0.056377449020391844
+          },
+          {
+            "group_by": "consumer_type",
+            "group": "commercial",
+            "n": 887,
+            "positives": 55,
+            "flag_rate": 0.013528748590755355,
+            "fpr": 0.0,
+            "tpr": 0.21818181818181817,
+            "precision": 1.0,
+            "base_rate": 0.06200676437429538
+          },
+          {
+            "group_by": "consumer_type",
+            "group": "residential",
+            "n": 4020,
+            "positives": 193,
+            "flag_rate": 0.006965174129353234,
+            "fpr": 0.0,
+            "tpr": 0.14507772020725387,
+            "precision": 1.0,
+            "base_rate": 0.04800995024875622
+          },
+          {
+            "group_by": "consumer_type",
+            "group": "small_industrial",
+            "n": 374,
+            "positives": 16,
+            "flag_rate": 0.0,
+            "fpr": 0.0,
+            "tpr": 0.0,
+            "precision": null,
+            "base_rate": 0.0427807486631016
+          }
+        ],
+        "fpr_disparity_ratio": {
+          "area": null,
+          "consumer_type": null
+        },
+        "flag_rate_disparity_ratio": {
+          "area": 2.556514701915295,
+          "consumer_type": 1.9423417619584473
+        }
+      },
+      "threshold": {
+        "overall_fpr": 0.000996611520829181,
+        "by_group": [
+          {
+            "group_by": "area",
+            "group": "peri_urban",
+            "n": 2106,
+            "positives": 78,
+            "flag_rate": 0.022792022792022793,
+            "fpr": 0.0004930966469428008,
+            "tpr": 0.6025641025641025,
+            "precision": 0.9791666666666666,
+            "base_rate": 0.037037037037037035
+          },
+          {
+            "group_by": "area",
+            "group": "rural",
+            "n": 674,
+            "positives": 45,
+            "flag_rate": 0.040059347181008904,
+            "fpr": 0.001589825119236884,
+            "tpr": 0.5777777777777777,
+            "precision": 0.9629629629629629,
+            "base_rate": 0.06676557863501484
+          },
+          {
+            "group_by": "area",
+            "group": "urban",
+            "n": 2501,
+            "positives": 141,
+            "flag_rate": 0.032387045181927226,
+            "fpr": 0.001271186440677966,
+            "tpr": 0.5531914893617021,
+            "precision": 0.9629629629629629,
+            "base_rate": 0.056377449020391844
+          },
+          {
+            "group_by": "consumer_type",
+            "group": "commercial",
+            "n": 887,
+            "positives": 55,
+            "flag_rate": 0.040586245772266064,
+            "fpr": 0.003605769230769231,
+            "tpr": 0.6,
+            "precision": 0.9166666666666666,
+            "base_rate": 0.06200676437429538
+          },
+          {
+            "group_by": "consumer_type",
+            "group": "residential",
+            "n": 4020,
+            "positives": 193,
+            "flag_rate": 0.027611940298507463,
+            "fpr": 0.0002613012803762738,
+            "tpr": 0.5699481865284974,
+            "precision": 0.990990990990991,
+            "base_rate": 0.04800995024875622
+          },
+          {
+            "group_by": "consumer_type",
+            "group": "small_industrial",
+            "n": 374,
+            "positives": 16,
+            "flag_rate": 0.02406417112299465,
+            "fpr": 0.002793296089385475,
+            "tpr": 0.5,
+            "precision": 0.8888888888888888,
+            "base_rate": 0.0427807486631016
+          }
+        ],
+        "fpr_disparity_ratio": {
+          "area": 3.2241653418124008,
+          "consumer_type": 13.799278846153848
+        },
+        "flag_rate_disparity_ratio": {
+          "area": 1.7576038575667656,
+          "consumer_type": 1.6865839909808342
+        }
+      }
+    }
+  },
+  "theft_aware_cascade": {
+    "summary": [
+      {
+        "season": "monsoon",
+        "intensity": 1.0,
+        "n": 196,
+        "truth_cascades": 31,
+        "truth_voltage_collapses": 0,
+        "scada_sim_mae_mw": 49.07086734693877,
+        "scada_sim_cascade_accuracy": 0.8418367346938775,
+        "scada_sim_missed_cascades": 31,
+        "scada_gnn_mae_mw": 47.56167992105289,
+        "scada_gnn_cascade_accuracy": 0.8418367346938775,
+        "scada_gnn_mean_load_lost_mw": 2.636738446294045,
+        "scada_gnn_mean_cascade_prob": 0.03172070036802027,
+        "aware_sim_mae_mw": 0.005051020408167952,
+        "aware_sim_cascade_accuracy": 1.0,
+        "aware_sim_missed_cascades": 0,
+        "aware_gnn_mae_mw": 31.870734096254626,
+        "aware_gnn_cascade_accuracy": 0.9489795918367347,
+        "aware_gnn_mean_load_lost_mw": 49.53630713540681,
+        "aware_gnn_mean_cascade_prob": 0.1627563248215925,
+        "truth_mean_load_lost_mw": 50.19841836734694,
+        "sim_mae_improvement_mw": 49.0658163265306,
+        "gnn_mae_improvement_mw": 15.690945824798266
+      },
+      {
+        "season": "monsoon",
+        "intensity": 3.0,
+        "n": 196,
+        "truth_cascades": 81,
+        "truth_voltage_collapses": 0,
+        "scada_sim_mae_mw": 131.6657142857143,
+        "scada_sim_cascade_accuracy": 0.5867346938775511,
+        "scada_sim_missed_cascades": 81,
+        "scada_gnn_mae_mw": 130.15652685982843,
+        "scada_gnn_cascade_accuracy": 0.5867346938775511,
+        "scada_gnn_mean_load_lost_mw": 2.636738446294045,
+        "scada_gnn_mean_cascade_prob": 0.03172070036802027,
+        "aware_sim_mae_mw": 0.046326530612250616,
+        "aware_sim_cascade_accuracy": 1.0,
+        "aware_sim_missed_cascades": 0,
+        "aware_gnn_mae_mw": 2.8367249531648557,
+        "aware_gnn_cascade_accuracy": 1.0,
+        "aware_gnn_mean_load_lost_mw": 134.30756674007495,
+        "aware_gnn_mean_cascade_prob": 0.4000239713649516,
+        "truth_mean_load_lost_mw": 132.79326530612246,
+        "sim_mae_improvement_mw": 131.61938775510205,
+        "gnn_mae_improvement_mw": 127.31980190666357
+      },
+      {
+        "season": "monsoon",
+        "intensity": 5.0,
+        "n": 196,
+        "truth_cascades": 81,
+        "truth_voltage_collapses": 0,
+        "scada_sim_mae_mw": 135.13397959183675,
+        "scada_sim_cascade_accuracy": 0.5867346938775511,
+        "scada_sim_missed_cascades": 81,
+        "scada_gnn_mae_mw": 133.62479216595085,
+        "scada_gnn_cascade_accuracy": 0.5867346938775511,
+        "scada_gnn_mean_load_lost_mw": 2.636738446294045,
+        "scada_gnn_mean_cascade_prob": 0.03172070036802027,
+        "aware_sim_mae_mw": 0.07168367346939433,
+        "aware_sim_cascade_accuracy": 1.0,
+        "aware_sim_missed_cascades": 0,
+        "aware_gnn_mae_mw": 4.0864884715177565,
+        "aware_gnn_cascade_accuracy": 1.0,
+        "aware_gnn_mean_load_lost_mw": 138.9253527972163,
+        "aware_gnn_mean_cascade_prob": 0.40486065702906654,
+        "truth_mean_load_lost_mw": 136.2615306122449,
+        "sim_mae_improvement_mw": 135.06229591836734,
+        "gnn_mae_improvement_mw": 129.5383036944331
+      },
+      {
+        "season": "post_monsoon",
+        "intensity": 1.0,
+        "n": 196,
+        "truth_cascades": 81,
+        "truth_voltage_collapses": 0,
+        "scada_sim_mae_mw": 1.9383673469387661,
+        "scada_sim_cascade_accuracy": 1.0,
+        "scada_sim_missed_cascades": 0,
+        "scada_gnn_mae_mw": 1.6198839086415853,
+        "scada_gnn_cascade_accuracy": 1.0,
+        "scada_gnn_mean_load_lost_mw": 144.263533300283,
+        "scada_gnn_mean_cascade_prob": 0.40818161636878136,
+        "aware_sim_mae_mw": 0.016887755102025746,
+        "aware_sim_cascade_accuracy": 1.0,
+        "aware_sim_missed_cascades": 0,
+        "aware_gnn_mae_mw": 2.8072070390351054,
+        "aware_gnn_cascade_accuracy": 1.0,
+        "aware_gnn_mean_load_lost_mw": 145.68313641450843,
+        "aware_gnn_mean_cascade_prob": 0.4089063529805868,
+        "truth_mean_load_lost_mw": 144.53530612244896,
+        "sim_mae_improvement_mw": 1.9214795918367404,
+        "gnn_mae_improvement_mw": -1.18732313039352
+      },
+      {
+        "season": "post_monsoon",
+        "intensity": 3.0,
+        "n": 196,
+        "truth_cascades": 81,
+        "truth_voltage_collapses": 0,
+        "scada_sim_mae_mw": 5.8151530612244855,
+        "scada_sim_cascade_accuracy": 1.0,
+        "scada_sim_missed_cascades": 0,
+        "scada_gnn_mae_mw": 4.148558536451685,
+        "scada_gnn_cascade_accuracy": 1.0,
+        "scada_gnn_mean_load_lost_mw": 144.263533300283,
+        "scada_gnn_mean_cascade_prob": 0.40818161636878136,
+        "aware_sim_mae_mw": 0.04642857142857706,
+        "aware_sim_cascade_accuracy": 1.0,
+        "aware_sim_missed_cascades": 0,
+        "aware_gnn_mae_mw": 2.3482603828274518,
+        "aware_gnn_cascade_accuracy": 1.0,
+        "aware_gnn_mean_load_lost_mw": 149.13767452629244,
+        "aware_gnn_mean_cascade_prob": 0.41195650195464734,
+        "truth_mean_load_lost_mw": 148.41209183673467,
+        "sim_mae_improvement_mw": 5.7687244897959085,
+        "gnn_mae_improvement_mw": 1.8002981536242335
+      },
+      {
+        "season": "post_monsoon",
+        "intensity": 5.0,
+        "n": 196,
+        "truth_cascades": 151,
+        "truth_voltage_collapses": 0,
+        "scada_sim_mae_mw": 118.5032142857143,
+        "scada_sim_cascade_accuracy": 0.6428571428571429,
+        "scada_sim_missed_cascades": 70,
+        "scada_gnn_mae_mw": 116.83661976094149,
+        "scada_gnn_cascade_accuracy": 0.6428571428571429,
+        "scada_gnn_mean_load_lost_mw": 144.263533300283,
+        "scada_gnn_mean_cascade_prob": 0.40818161636878136,
+        "aware_sim_mae_mw": 0.11943877551020798,
+        "aware_sim_cascade_accuracy": 1.0,
+        "aware_sim_missed_cascades": 0,
+        "aware_gnn_mae_mw": 14.676539194535245,
+        "aware_gnn_cascade_accuracy": 1.0,
+        "aware_gnn_mean_load_lost_mw": 247.88135917819275,
+        "aware_gnn_mean_cascade_prob": 0.7164717434460893,
+        "truth_mean_load_lost_mw": 261.1001530612245,
+        "sim_mae_improvement_mw": 118.38377551020409,
+        "gnn_mae_improvement_mw": 102.16008056640624
+      },
+      {
+        "season": "summer",
+        "intensity": 1.0,
+        "n": 196,
+        "truth_cascades": 185,
+        "truth_voltage_collapses": 0,
+        "scada_sim_mae_mw": 4.7338265306122365,
+        "scada_sim_cascade_accuracy": 1.0,
+        "scada_sim_missed_cascades": 0,
+        "scada_gnn_mae_mw": 4.300769373056845,
+        "scada_gnn_cascade_accuracy": 0.9948979591836735,
+        "scada_gnn_mean_load_lost_mw": 353.4530616293148,
+        "scada_gnn_mean_cascade_prob": 0.9387787388787933,
+        "aware_sim_mae_mw": 0.04153061224490398,
+        "aware_sim_cascade_accuracy": 1.0,
+        "aware_sim_missed_cascades": 0,
+        "aware_gnn_mae_mw": 7.3249237371950775,
+        "aware_gnn_cascade_accuracy": 0.9948979591836735,
+        "aware_gnn_mean_load_lost_mw": 358.54865514015665,
+        "aware_gnn_mean_cascade_prob": 0.9409529579597244,
+        "truth_mean_load_lost_mw": 352.432806122449,
+        "sim_mae_improvement_mw": 4.692295918367332,
+        "gnn_mae_improvement_mw": -3.0241543641382327
+      },
+      {
+        "season": "summer",
+        "intensity": 3.0,
+        "n": 196,
+        "truth_cascades": 185,
+        "truth_voltage_collapses": 0,
+        "scada_sim_mae_mw": 14.203265306122429,
+        "scada_sim_cascade_accuracy": 1.0,
+        "scada_sim_missed_cascades": 0,
+        "scada_gnn_mae_mw": 9.03608349235689,
+        "scada_gnn_cascade_accuracy": 0.9948979591836735,
+        "scada_gnn_mean_load_lost_mw": 353.4530616293148,
+        "scada_gnn_mean_cascade_prob": 0.9387787388787933,
+        "aware_sim_mae_mw": 0.12336734693877119,
+        "aware_sim_cascade_accuracy": 1.0,
+        "aware_sim_missed_cascades": 0,
+        "aware_gnn_mae_mw": 11.746065742336985,
+        "aware_gnn_cascade_accuracy": 0.9948979591836735,
+        "aware_gnn_mean_load_lost_mw": 367.3915870822206,
+        "aware_gnn_mean_cascade_prob": 0.9427154948871063,
+        "truth_mean_load_lost_mw": 361.90224489795906,
+        "sim_mae_improvement_mw": 14.079897959183658,
+        "gnn_mae_improvement_mw": -2.7099822499800954
+      },
+      {
+        "season": "summer",
+        "intensity": 5.0,
+        "n": 196,
+        "truth_cascades": 185,
+        "truth_voltage_collapses": 10,
+        "scada_sim_mae_mw": 23.67286734693877,
+        "scada_sim_cascade_accuracy": 1.0,
+        "scada_sim_missed_cascades": 0,
+        "scada_gnn_mae_mw": 17.935901772012507,
+        "scada_gnn_cascade_accuracy": 0.9948979591836735,
+        "scada_gnn_mean_load_lost_mw": 353.4530616293148,
+        "scada_gnn_mean_cascade_prob": 0.9387787388787933,
+        "aware_sim_mae_mw": 0.20910153061222725,
+        "aware_sim_cascade_accuracy": 1.0,
+        "aware_sim_missed_cascades": 0,
+        "aware_gnn_mae_mw": 22.26058515674823,
+        "aware_gnn_cascade_accuracy": 0.9948979591836735,
+        "aware_gnn_mean_load_lost_mw": 381.6160798364756,
+        "aware_gnn_mean_cascade_prob": 0.9434030916142676,
+        "truth_mean_load_lost_mw": 371.37184693877555,
+        "sim_mae_improvement_mw": 23.463765816326543,
+        "gnn_mae_improvement_mw": -4.3246833847357244
+      }
+    ],
+    "states": [
+      {
+        "season": "monsoon",
+        "intensity": 1.0,
+        "true_hidden_mw": 4.1617,
+        "est_hidden_mw": 4.128299999999999,
+        "max_loading_pct": {
+          "scada": 49.55829079791271,
+          "aware": 50.15115503228861,
+          "truth": 50.15620348906425
+        }
+      },
+      {
+        "season": "monsoon",
+        "intensity": 3.0,
+        "true_hidden_mw": 12.4853,
+        "est_hidden_mw": 12.385,
+        "max_loading_pct": {
+          "scada": 49.55829079791271,
+          "aware": 51.38640283683634,
+          "truth": 51.40177565107451
+        }
+      },
+      {
+        "season": "monsoon",
+        "intensity": 5.0,
+        "true_hidden_mw": 20.809,
+        "est_hidden_mw": 20.6417,
+        "max_loading_pct": {
+          "scada": 49.55829079791271,
+          "aware": 52.691089620719445,
+          "truth": 52.71701851212723
+        }
+      },
+      {
+        "season": "post_monsoon",
+        "intensity": 1.0,
+        "true_hidden_mw": 4.6514,
+        "est_hidden_mw": 4.6141,
+        "max_loading_pct": {
+          "scada": 55.24034850879713,
+          "aware": 56.013058498748705,
+          "truth": 56.01888015542189
+        }
+      },
+      {
+        "season": "post_monsoon",
+        "intensity": 3.0,
+        "true_hidden_mw": 13.9543,
+        "est_hidden_mw": 13.8421,
+        "max_loading_pct": {
+          "scada": 55.24034850879713,
+          "aware": 57.76081636192474,
+          "truth": 57.77852668310172
+        }
+      },
+      {
+        "season": "post_monsoon",
+        "intensity": 5.0,
+        "true_hidden_mw": 23.256999999999998,
+        "est_hidden_mw": 23.0702,
+        "max_loading_pct": {
+          "scada": 55.24034850879713,
+          "aware": 59.702901908061804,
+          "truth": 59.73217189527917
+        }
+      },
+      {
+        "season": "summer",
+        "intensity": 1.0,
+        "true_hidden_mw": 5.6306,
+        "est_hidden_mw": 5.5853,
+        "max_loading_pct": {
+          "scada": 69.50494620152406,
+          "aware": 71.02898846902573,
+          "truth": 71.03551236996975
+        }
+      },
+      {
+        "season": "summer",
+        "intensity": 3.0,
+        "true_hidden_mw": 16.8919,
+        "est_hidden_mw": 16.7563,
+        "max_loading_pct": {
+          "scada": 69.50494620152406,
+          "aware": 74.39095231111263,
+          "truth": 74.40854720607088
+        }
+      },
+      {
+        "season": "summer",
+        "intensity": 5.0,
+        "true_hidden_mw": 28.1532,
+        "est_hidden_mw": 27.9271,
+        "max_loading_pct": {
+          "scada": 69.50494620152406,
+          "aware": 78.3650575646536,
+          "truth": 78.38801847930694
+        }
+      }
+    ]
+  },
+  "ht_tapping": {
+    "season": "post_monsoon",
+    "n_cases": 300,
+    "threshold": 170.45740276600284,
+    "recall": 0.5625,
+    "false_alarm_rate": 0.0,
+    "mae_km": 25.555555555555557,
+    "median_km": 20.0,
+    "within_20km": 0.5679012345679012,
+    "mw_mae": 2.5574843078737057,
+    "by_magnitude": {
+      "2-5MW": {
+        "n": 17,
+        "recall": 0.0,
+        "median_km_error": null
+      },
+      "5-15MW": {
+        "n": 56,
+        "recall": 0.39285714285714285,
+        "median_km_error": 20.0
+      },
+      "15-30MW": {
+        "n": 71,
+        "recall": 0.8309859154929577,
+        "median_km_error": 20.0
+      }
+    }
+  },
+  "runtime_s": 259.5
+}

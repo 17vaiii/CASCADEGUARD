@@ -17,9 +17,9 @@ AI-assisted cascade-failure prevention and non-technical loss (theft) detection 
 
 ---
 
-## 2. Current Progress (P1, P2, and P3 Delivered)
+## 2. Current Progress (P1–P5 delivered; P4/P5 ticks in [docs/PRD_CHECKLIST_P4_P5.md](docs/PRD_CHECKLIST_P4_P5.md))
 
-This section records what has been implemented, validated, and integrated into the root package (`src/cascadeguard/`). All 26 automated unit and integration tests across grid physics, platform services, and machine learning models are passing.
+This section records what has been implemented, validated, and integrated into the root package (`src/cascadeguard/`). All 87 automated unit and integration tests across grid physics, platform services, machine learning, theft analytics, mitigation, retrieval, copilot and dashboard are passing (26 P1–P3 + 29 P4 + 32 P5).
 
 ### P1 — Grid Simulation, AC Cascade Engine, and Search (Complete)
 
@@ -62,6 +62,35 @@ This section records what has been implemented, validated, and integrated into t
 - **High-Throughput Screening (`screening.py`):** Evaluates candidate line outages at $>800$ contingencies/second (<1 ms per contingency) for rapid operator alerts.
 - **Explainability & Retrieval Export (`explain.py`, `embeddings_export.py`):** Gradient-based line attribution and exported 128-dim scenario embeddings for P5 Qdrant retrieval.
 - **API Integration:** Connected to [`src/cascadeguard/api/main.py`](file:///home/gdp/Projects/EL/CASCADEGUARD/src/cascadeguard/api/main.py); `/api/predict` and `/api/screen` return live calibrated predictions.
+
+### P4 — Theft and Loss Analytics (Complete, 2026-11-05)
+
+**Purpose:** Separate technical loss from suspected non-technical loss (NTL), rank inspection leads with reasons, and show how hidden theft load changes cascade risk (T9).
+
+**Delivered in root package (`src/cascadeguard/theft/`, 20 modules; config `configs/theft/models.yaml`; 26 tests in `tests/theft/`):**
+
+- **Distribution simulator (`feeder_sim.py`):** substation → 11 kV feeder → DT → 5,281 consumers. Five injected theft types plus hard negatives (solar, new appliance, vacancy, holidays, communication gaps, unbilled loads, meter bias and drift). Exports P2 meter-contract rows.
+- **T1/T2 physics (`technical_loss.py`, `energy_balance.py`):** pandapower feeder models with fitted loss curves (technical loss 2.68 % estimated vs 2.69 % true). Feeder/DT residual-change z-scores: feeder flag precision 1.00, DT flag precision 0.90.
+- **T3/T4/T7 models (`features.py`, `anomaly.py`, `supervised.py`, `tamper_signals.py`, `fusion.py`, `graph_theft.py`):** fusion test AUROC **0.919**, PR-AUC **0.716**, precision@40 **0.65** (threshold baseline 0.787 / 0.388 / 0.33). ECE 0.0055 after temperature scaling; conformal coverage 88.6 %.
+- **T5/T6/T10 (`reason_codes.py`, `inspection.py`, `case_retrieval.py`):** reason-coded consumer leads and DT network leads. Expected-value ranking recovers 2.2× the rule-based energy in 40 visits. Similar-past-case precedent, exportable to Qdrant `theft_cases`.
+- **T9 theft-aware cascade (`hidden_load.py`):** in monsoon, SCADA-only cascade screening missed 31–81 of 196 true cascades caused by hidden theft load; the theft-aware state missed 0.
+- **T8 HT tapping (`ht_tapping.py`), P4-11 fairness (`fairness.py`), P4-1 public data loader (`public_datasets.py`).**
+- **API:** `POST /api/theft-score` now serves P4 leads via `theft/service.py`, with an audit record.
+- **Run:** `PYTHONPATH=src python -m cascadeguard.theft.pipeline` (~4 min). **Full status, results and hand-off to-dos:** [`docs/p4/p4.md`](docs/p4/p4.md); report: [`docs/report/sec_p4.md`](docs/report/sec_p4.md).
+
+### P5 — Mitigation, Case-Based Retrieval, Copilot and Dashboard (Complete, 2026-11-05)
+
+**Purpose:** Recommend the smallest verified fix for a contingency (including hydro ramp within reservoir limits), reuse past cases, explain the decision, and give operators, planners and loss analysts one console.
+
+**Delivered in root package (`src/cascadeguard/{mitigation,retrieval,copilot,dashboard}/`; config `configs/mitigation/optimizer.yaml`; extra deps `requirements-p5.txt`; 21 tests):**
+
+- **R9 optimizer + closed loop (`mitigation/`):** AC sensitivities → OR-Tools MILP (tie/hydro redispatch, controlled shedding, switching), verified by re-simulation with the P1 cascade engine, re-linearisation, then greedy fallback. All 74 events that lose load without action got a verified plan. Post-monsoon N-1 blackouts (100 %) → 0.71 % mean loss. Summer tie loss: 42.9 % (automatic UFLS) → 29.7 % with an 80 MW hydro ramp plus controlled shed.
+- **H2/H3:** hydro bounds from P1's `dispatch_hydro` (ramp window, capacity, daily energy budget, reservoir floor); 0 violations. Assumption: an equivalent state-grid tie at NELAMANGALA (200 MW).
+- **R8 retrieval + warm start (`retrieval/`):** precision@3 0.97 (vs 0.68 baseline); precedent warm start about 5× faster than cold optimisation with the same pass rate.
+- **Theft-aware planning (P4 link):** with 12.5 MW of hidden load in monsoon, theft-aware plans held on the true state 22/22; metered-only plans 0/22.
+- **R11 copilot (`copilot/`):** cited, explanation-only incident briefs; Claude `claude-opus-5-5` with refusal fallback when credentials exist, grounded extractive brief offline; citation, number and over-claim checks.
+- **Dashboard (`dashboard/`):** Streamlit + Plotly, Grid Resilience / Loss & Theft / Results tabs, role views, theft-aware toggle. `POST /api/mitigate` now serves verified plans with an audit record.
+- **Run:** `PYTHONPATH=src python -m cascadeguard.mitigation.experiment` then `PYTHONPATH=src streamlit run src/cascadeguard/dashboard/app.py`. **Status, results, to-dos:** [`docs/p5/p5.md`](docs/p5/p5.md); demo: [`docs/p5/demo.md`](docs/p5/demo.md); report: [`docs/report/sec_p5.md`](docs/report/sec_p5.md).
 
 ---
 

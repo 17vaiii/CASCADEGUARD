@@ -1,13 +1,19 @@
+# API image. main.py imports numpy and torch at module level, and the theft and mitigation routes
+# need the full stack, so this installs the same dependencies as the dashboard (CPU PyTorch).
+# WORKDIR /workspace matches the data volume in docker-compose.yml, so models are found.
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
-WORKDIR /app
-COPY requirements-api.txt ./requirements-api.txt
-RUN python -m pip install --upgrade pip && python -m pip install -r requirements-api.txt
+WORKDIR /workspace
+COPY requirements.txt requirements-p5.txt ./
+RUN python -m pip install --upgrade pip \
+ && python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu \
+ && python -m pip install -r requirements.txt -r requirements-p5.txt
 COPY src ./src
 COPY contracts ./contracts
 COPY configs ./configs
+COPY data/models ./data/models
 EXPOSE 8000
 CMD ["uvicorn", "cascadeguard.api.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,0 +1,30 @@
+{
+  "gnn_metrics": {
+    "cascade_roc_auc": 0.9996,
+    "cascade_f1": 0.9856,
+    "load_loss_mae_mw": 5.98,
+    "temperature_T": 0.7058,
+    "uncalibrated_ece": 0.0268,
+    "calibrated_ece": 0.012,
+    "conformal_quantile_mw": 13.3,
+    "conformal_target_coverage": 0.9,
+    "conformal_empirical_coverage": 0.901
+  },
+  "baseline_metrics": {
+    "random_forest": {
+      "accuracy": 0.7475845410628019,
+      "f1": 0.6866566716641679,
+      "roc_auc": 0.8169040243968198,
+      "load_loss_mae": 108.4728695825821
+    },
+    "logistic_regression": {
+      "accuracy": 0.7439613526570048,
+      "f1": 0.6697819314641744,
+      "roc_auc": 0.8268227216354018,
+      "load_loss_mae": 115.87345886230469
+    }
+  },
+  "train_samples": 3858,
+  "val_samples": 826,
+  "test_samples": 828
+}

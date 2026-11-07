@@ -163,13 +163,60 @@ def screen(req: DataRequest) -> dict[str, Any]:
 
 
 @app.post("/api/mitigate")
-def mitigate(_: DataRequest) -> None:
-    _dependency_unavailable("mitigation optimizer (P5)")
+def mitigate(req: DataRequest) -> dict[str, Any]:
+    """P5 verified minimal mitigation. ``snapshot`` = {season, lines: [int], tie_loss: bool,
+    theft_aware: bool, intensity: float}; ``options.brief`` adds the cited copilot brief.
+
+    Advisory only; every response is written to the audit log with its verification result.
+    """
+    try:
+        from cascadeguard.mitigation.service import mitigation_request
+    except ImportError:
+        _dependency_unavailable("mitigation optimizer (P5)")
+    if not req.snapshot.get("season"):
+        raise HTTPException(status_code=400, detail="snapshot.season and snapshot.lines / tie_loss are required")
+    try:
+        result = mitigation_request(req.snapshot, bool(req.options.get("brief", False)))
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    rec = result["recommendation"]
+    audit = create_recommendation(
+        {"kind": "corridor_mitigation", "event": result["event"], "stage": result["stage"],
+         "actions": rec["actions"], "verified": rec["verified"]},
+        [result["event"]["label"], result["season"]])
+    record_verification(audit["audit_id"], {"verified": bool(rec["verified"]), "outcome": result["stage"],
+                                            "details": {"load_lost_pct": rec["load_lost_pct"]}})
+    return {**result, "audit_id": audit["audit_id"]}
 
 
 @app.post("/api/theft-score")
-def theft_score(_: DataRequest) -> None:
-    _dependency_unavailable("theft scoring model (P4)")
+def theft_score(req: DataRequest) -> dict[str, Any]:
+    """P4 theft leads. ``snapshot`` = {readings, history_end, tamper_events?}; ``options.top_k``.
+
+    Leads are advisory and require field inspection; each response is written to the audit log
+    (consumer IDs and a payload fingerprint only, never raw meter reads).
+    """
+    from cascadeguard.theft.service import BundleMissing, load_bundle, score_consumers
+    try:
+        load_bundle()
+    except BundleMissing:
+        _dependency_unavailable("theft scoring model (P4)")
+    if not req.snapshot.get("readings"):
+        raise HTTPException(status_code=400, detail="snapshot.readings (interval meter rows) is required")
+    try:
+        result = score_consumers({**req.snapshot, "top_k": req.options.get("top_k", req.snapshot.get("top_k", 20))})
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    import hashlib
+    import json as _json
+    fingerprint = "sha256:" + hashlib.sha256(_json.dumps(req.snapshot, sort_keys=True, default=str)
+                                             .encode("utf-8")).hexdigest()
+    audit = create_recommendation(
+        {"kind": "theft_inspection_leads", "model_version": result["model_version"],
+         "leads": [{"consumer_id": lead["consumer_id"], "score": lead["score"],
+                    "confidence": lead["confidence"]} for lead in result["leads"]]},
+        [lead["consumer_id"] for lead in result["leads"]], fingerprint)
+    return {**result, "audit_id": audit.get("audit_id")}
 
 
 @app.post("/api/audit/recommendations", status_code=201)

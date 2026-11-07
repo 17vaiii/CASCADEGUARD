@@ -41,13 +41,18 @@ def test_audit_workflow():
 
 
 def test_unregistered_p4_p5_routes_return_503():
+    # P5 registered its optimizer: an empty request is a 400; 503 only if OR-Tools is missing.
     res_mit = client.post("/api/mitigate", json={})
-    assert res_mit.status_code == 503
-    assert res_mit.json()["detail"]["component"] == "mitigation optimizer (P5)"
+    assert res_mit.status_code in (400, 503)
+    if res_mit.status_code == 503:
+        assert res_mit.json()["detail"]["component"] == "mitigation optimizer (P5)"
 
+    # P4 registered its scorer: 503 only while the trained bundle is absent; with the bundle,
+    # an empty request is a 400 (no meter readings supplied).
     res_theft = client.post("/api/theft-score", json={})
-    assert res_theft.status_code == 503
-    assert res_theft.json()["detail"]["component"] == "theft scoring model (P4)"
+    assert res_theft.status_code in (400, 503)
+    if res_theft.status_code == 503:
+        assert res_theft.json()["detail"]["component"] == "theft scoring model (P4)"
 
 
 def test_predict_and_screen_with_sample_snapshot():

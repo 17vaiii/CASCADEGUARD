@@ -1,0 +1,2673 @@
+[
+  {
+    "rank": 1,
+    "lead_id": "C0003242",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F04_DT0",
+    "score": 0.9867,
+    "score_interval": [
+      0.9333,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 9726.4,
+    "summary": "Suspected non-technical loss (score 99%, high confidence): Peers of the same type on the same feeder changed by +2% while this consumer changed by -85%; Transformer PEENYA_F04_DT0 unexplained loss rose by 23.7% of its input (z = 100). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +2% while this consumer changed by -85%.",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F04_DT0 unexplained loss rose by 23.7% of its input (z = 100).",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F04 unexplained loss rose by 7.4% of input in the same window (z = 20).",
+        "weight": 1.009,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 1.0,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 100% rather than a gradual change.",
+        "weight": 0.998,
+        "kind": "supporting"
+      },
+      {
+        "code": "ZERO_READS",
+        "text": "Zero readings in 86% of intervals (longest run 38.6 days) versus 0% in the reference period.",
+        "weight": 0.857,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: power off x1.",
+        "weight": 0.3,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0001416",
+        "similarity": 0.9771,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0000659",
+        "similarity": 0.9418,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0002733",
+        "similarity": 0.9365,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0003853",
+        "similarity": 0.9361,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0002829",
+        "similarity": 0.9344,
+        "outcome": "meter_stop"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "meter_stop": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 2,
+    "lead_id": "PEENYA_F05_DT6",
+    "lead_type": "network",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F05_DT6",
+    "score": 0.8791,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 9057.4,
+    "summary": "DT PEENYA_F05_DT6: unexplained loss rose from -1.4% to 17.7% of input (7-day peak 26.4%, z = 109); 5,077 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT PEENYA_F05_DT6: unexplained loss rose from -1.4% to 17.7% of input (7-day peak 26.4%, z = 109); 5,077 kWh is explained by consumer leads below it.",
+        "weight": 4.696323216521836,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 3,
+    "lead_id": "PEENYA_F20_DT2",
+    "lead_type": "network",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F20_DT2",
+    "score": 0.864,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 8181.8,
+    "summary": "DT PEENYA_F20_DT2: unexplained loss rose from -3.0% to 8.0% of input (7-day peak 15.5%, z = 48); 662 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT PEENYA_F20_DT2: unexplained loss rose from -3.0% to 8.0% of input (7-day peak 15.5%, z = 48); 662 kWh is explained by consumer leads below it.",
+        "weight": 3.9001794717182654,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 4,
+    "lead_id": "SHIMOGA_F00_DT4",
+    "lead_type": "network",
+    "substation": "SHIMOGA",
+    "dt_id": "SHIMOGA_F00_DT4",
+    "score": 0.804,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 8273.4,
+    "summary": "DT SHIMOGA_F00_DT4: unexplained loss rose from 16.7% to 29.1% of input (7-day peak 39.3%, z = 16); 244 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT SHIMOGA_F00_DT4: unexplained loss rose from 16.7% to 29.1% of input (7-day peak 39.3%, z = 16); 244 kWh is explained by consumer leads below it.",
+        "weight": 2.8577424784090013,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 5,
+    "lead_id": "C0004308",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F13_DT0",
+    "score": 0.9756,
+    "score_interval": [
+      0.9231,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 6234.9,
+    "summary": "Suspected non-technical loss (score 98%, high confidence): Transformer PEENYA_F13_DT0 unexplained loss rose by 26.7% of its input (z = 133); Feeder PEENYA_F13 unexplained loss rose by 10.8% of input in the same window (z = 22). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F13_DT0 unexplained loss rose by 26.7% of its input (z = 133).",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F13 unexplained loss rose by 10.8% of input in the same window (z = 22).",
+        "weight": 1.041,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 1.0,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +8% while this consumer changed by -25%.",
+        "weight": 0.997,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 50% rather than a gradual change.",
+        "weight": 0.504,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x1, power off x4.",
+        "weight": 0.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "ZERO_READS",
+        "text": "Zero readings in 31% of intervals (longest run 14.0 days) versus 0% in the reference period.",
+        "weight": 0.312,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0003479",
+        "similarity": 0.9951,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0003853",
+        "similarity": 0.9888,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0000206",
+        "similarity": 0.9837,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0004202",
+        "similarity": 0.9812,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0005143",
+        "similarity": 0.9797,
+        "outcome": "meter_stop"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "meter_stop": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 6,
+    "lead_id": "C0001125",
+    "lead_type": "consumer",
+    "substation": "SIRA_KBCROSS",
+    "dt_id": "SIRA_KBCROSS_F02_DT3",
+    "score": 0.9741,
+    "score_interval": [
+      0.9231,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 5096.7,
+    "summary": "Suspected non-technical loss (score 97%, high confidence): Peers of the same type on the same feeder changed by +6% while this consumer changed by -52%; Feeder SIRA_KBCROSS_F02 unexplained loss rose by 11.7% of input in the same window (z = 49). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +6% while this consumer changed by -52%.",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder SIRA_KBCROSS_F02 unexplained loss rose by 11.7% of input in the same window (z = 49).",
+        "weight": 1.305,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 1.0,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 83% rather than a gradual change.",
+        "weight": 0.828,
+        "kind": "supporting"
+      },
+      {
+        "code": "ZERO_READS",
+        "text": "Zero readings in 56% of intervals (longest run 25.2 days) versus 0% in the reference period.",
+        "weight": 0.559,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0002383",
+        "similarity": 0.9946,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0001129",
+        "similarity": 0.9915,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0000659",
+        "similarity": 0.9908,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0003801",
+        "similarity": 0.9891,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0002829",
+        "similarity": 0.9886,
+        "outcome": "meter_stop"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "meter_stop": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 7,
+    "lead_id": "C0001093",
+    "lead_type": "consumer",
+    "substation": "SIRA_KBCROSS",
+    "dt_id": "SIRA_KBCROSS_F02_DT2",
+    "score": 0.7344,
+    "score_interval": [
+      0.5,
+      1.0
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 6302.4,
+    "summary": "Suspected non-technical loss (score 73%, medium confidence): Transformer SIRA_KBCROSS_F02_DT2 unexplained loss rose by 22.6% of its input (z = 110); Feeder SIRA_KBCROSS_F02 unexplained loss rose by 11.7% of input in the same window (z = 49). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer SIRA_KBCROSS_F02_DT2 unexplained loss rose by 22.6% of its input (z = 110).",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder SIRA_KBCROSS_F02 unexplained loss rose by 11.7% of input in the same window (z = 49).",
+        "weight": 1.305,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +7% while this consumer changed by -32%.",
+        "weight": 1.16,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 88% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.882,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x1.",
+        "weight": 0.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 33% rather than a gradual change.",
+        "weight": 0.326,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0000101",
+        "similarity": 0.9767,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0003620",
+        "similarity": 0.9764,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0001392",
+        "similarity": 0.976,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0000216",
+        "similarity": 0.9751,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0000025",
+        "similarity": 0.9745,
+        "outcome": "vacancy"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.4,
+      "outcomes": {
+        "vacancy": 3,
+        "meter_bypass": 2
+      }
+    },
+    "sim_truth_hit": false
+  },
+  {
+    "rank": 8,
+    "lead_id": "C0002383",
+    "lead_type": "consumer",
+    "substation": "NELAMANGALA",
+    "dt_id": "NELAMANGALA_F07_DT3",
+    "score": 0.9575,
+    "score_interval": [
+      0.9091,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 4635.8,
+    "summary": "Suspected non-technical loss (score 96%, high confidence): Peers of the same type on the same feeder changed by +8% while this consumer changed by -37%; Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +8% while this consumer changed by -37%.",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 1.0,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder NELAMANGALA_F07 unexplained loss rose by 4.4% of input in the same window (z = 9).",
+        "weight": 0.772,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 76% rather than a gradual change.",
+        "weight": 0.76,
+        "kind": "supporting"
+      },
+      {
+        "code": "ZERO_READS",
+        "text": "Zero readings in 41% of intervals (longest run 18.6 days) versus 0% in the reference period.",
+        "weight": 0.413,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0002829",
+        "similarity": 0.9958,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0003801",
+        "similarity": 0.9956,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0001125",
+        "similarity": 0.9946,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0000659",
+        "similarity": 0.9938,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0001129",
+        "similarity": 0.9902,
+        "outcome": "meter_stop"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "meter_stop": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 9,
+    "lead_id": "PEENYA_F09_DT1",
+    "lead_type": "network",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F09_DT1",
+    "score": 0.8555,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 4551.7,
+    "summary": "DT PEENYA_F09_DT1: unexplained loss rose from 0.8% to 10.9% of input (7-day peak 22.7%, z = 114); 2,277 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT PEENYA_F09_DT1: unexplained loss rose from 0.8% to 10.9% of input (7-day peak 22.7%, z = 114); 2,277 kWh is explained by consumer leads below it.",
+        "weight": 4.743380158059475,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 10,
+    "lead_id": "C0000206",
+    "lead_type": "consumer",
+    "substation": "SHIMOGA",
+    "dt_id": "SHIMOGA_F01_DT3",
+    "score": 0.9903,
+    "score_interval": [
+      0.9412,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 3553.1,
+    "summary": "Suspected non-technical loss (score 99%, high confidence): Peers of the same type on the same feeder changed by +7% while this consumer changed by -65%; Transformer SHIMOGA_F01_DT3 unexplained loss rose by 15.5% of its input (z = 56). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +7% while this consumer changed by -65%.",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer SHIMOGA_F01_DT3 unexplained loss rose by 15.5% of its input (z = 56).",
+        "weight": 1.348,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder SHIMOGA_F01 unexplained loss rose by 3.2% of input in the same window (z = 20).",
+        "weight": 1.022,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 1.0,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 86% rather than a gradual change.",
+        "weight": 0.856,
+        "kind": "supporting"
+      },
+      {
+        "code": "ZERO_READS",
+        "text": "Zero readings in 69% of intervals (longest run 31.0 days) versus 0% in the reference period.",
+        "weight": 0.689,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: power off x1.",
+        "weight": 0.3,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0004310",
+        "similarity": 0.9931,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0003801",
+        "similarity": 0.9917,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0003821",
+        "similarity": 0.9876,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0001979",
+        "similarity": 0.9868,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0001125",
+        "similarity": 0.9858,
+        "outcome": "meter_stop"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "meter_stop": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 11,
+    "lead_id": "C0003474",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F05_DT6",
+    "score": 0.9994,
+    "score_interval": [
+      0.96,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 3013.3,
+    "summary": "Suspected non-technical loss (score 100%, high confidence): Peers of the same type on the same feeder changed by +9% while this consumer changed by -54%; Transformer PEENYA_F05_DT6 unexplained loss rose by 27.8% of its input (z = 109). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +9% while this consumer changed by -54%.",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F05_DT6 unexplained loss rose by 27.8% of its input (z = 109).",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 1.0,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F05 unexplained loss rose by 6.6% of input in the same window (z = 17).",
+        "weight": 0.956,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x2, power off x1.",
+        "weight": 0.7,
+        "kind": "supporting"
+      },
+      {
+        "code": "ZERO_READS",
+        "text": "Zero readings in 61% of intervals (longest run 27.4 days) versus 0% in the reference period.",
+        "weight": 0.609,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 55% rather than a gradual change.",
+        "weight": 0.546,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0003479",
+        "similarity": 0.9954,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0000206",
+        "similarity": 0.9933,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0003853",
+        "similarity": 0.9893,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0004202",
+        "similarity": 0.9873,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0004310",
+        "similarity": 0.9848,
+        "outcome": "meter_stop"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "meter_stop": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 12,
+    "lead_id": "C0003848",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F09_DT0",
+    "score": 0.8021,
+    "score_interval": [
+      0.6667,
+      1.0
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 3116.5,
+    "summary": "Suspected non-technical loss (score 80%, medium confidence): Peers of the same type on the same feeder changed by +8% while this consumer changed by -17%; Feeder PEENYA_F09 unexplained loss rose by 7.4% of input in the same window (z = 18). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +8% while this consumer changed by -17%.",
+        "weight": 1.006,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F09 unexplained loss rose by 7.4% of input in the same window (z = 18).",
+        "weight": 0.981,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 82% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.817,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F09_DT0 unexplained loss rose by 12.8% of its input (z = 7).",
+        "weight": 0.7,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x1, magnetic interference x1, reverse current x1.",
+        "weight": 0.7,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 35% rather than a gradual change.",
+        "weight": 0.354,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0002636",
+        "similarity": 0.9909,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0004748",
+        "similarity": 0.9895,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0002683",
+        "similarity": 0.9869,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0001613",
+        "similarity": 0.9861,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0000111",
+        "similarity": 0.9857,
+        "outcome": "vacancy"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.8,
+      "outcomes": {
+        "temporary_tampering": 4,
+        "vacancy": 1
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 13,
+    "lead_id": "C0004369",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F13_DT2",
+    "score": 0.9722,
+    "score_interval": [
+      0.9231,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 2275.8,
+    "summary": "Suspected non-technical loss (score 97%, high confidence): Transformer PEENYA_F13_DT2 unexplained loss rose by 16.8% of its input (z = 84); Feeder PEENYA_F13 unexplained loss rose by 10.8% of input in the same window (z = 22). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F13_DT2 unexplained loss rose by 16.8% of its input (z = 84).",
+        "weight": 1.483,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F13 unexplained loss rose by 10.8% of input in the same window (z = 22).",
+        "weight": 1.041,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x1, magnetic interference x1.",
+        "weight": 0.7,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 54% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.542,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0004317",
+        "similarity": 0.9642,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0001048",
+        "similarity": 0.931,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0004419",
+        "similarity": 0.92,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0000096",
+        "similarity": 0.9195,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0001100",
+        "similarity": 0.9124,
+        "outcome": "temporary_tampering"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "temporary_tampering": 3,
+        "meter_bypass": 2
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 14,
+    "lead_id": "C0004249",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F12_DT2",
+    "score": 0.9579,
+    "score_interval": [
+      0.9091,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 2286.8,
+    "summary": "Suspected non-technical loss (score 96%, high confidence): Peers of the same type on the same feeder changed by +10% while this consumer changed by -40%; Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +10% while this consumer changed by -40%.",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 1.0,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 78% rather than a gradual change.",
+        "weight": 0.779,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F12 unexplained loss rose by 1.8% of input in the same window (z = 5).",
+        "weight": 0.615,
+        "kind": "supporting"
+      },
+      {
+        "code": "ZERO_READS",
+        "text": "Zero readings in 42% of intervals (longest run 19.1 days) versus 0% in the reference period.",
+        "weight": 0.424,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: power off x5.",
+        "weight": 0.3,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0005076",
+        "similarity": 0.9875,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0004202",
+        "similarity": 0.9816,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0001979",
+        "similarity": 0.9814,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0003821",
+        "similarity": 0.9792,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0001125",
+        "similarity": 0.9791,
+        "outcome": "meter_stop"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "meter_stop": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 15,
+    "lead_id": "PEENYA_F07_DT2",
+    "lead_type": "network",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F07_DT2",
+    "score": 0.6884,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 2766.0,
+    "summary": "DT PEENYA_F07_DT2: unexplained loss rose from 1.3% to 5.2% of input (7-day peak 8.5%, z = 40); 189 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT PEENYA_F07_DT2: unexplained loss rose from 1.3% to 5.2% of input (7-day peak 8.5%, z = 40); 189 kWh is explained by consumer leads below it.",
+        "weight": 3.718439667086833,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": false
+  },
+  {
+    "rank": 16,
+    "lead_id": "PEENYA_F18_DT4",
+    "lead_type": "network",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F18_DT4",
+    "score": 0.7444,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 2361.9,
+    "summary": "DT PEENYA_F18_DT4: unexplained loss rose from 1.3% to 7.5% of input (7-day peak 13.3%, z = 60); 654 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT PEENYA_F18_DT4: unexplained loss rose from 1.3% to 7.5% of input (7-day peak 13.3%, z = 60); 654 kWh is explained by consumer leads below it.",
+        "weight": 4.109873195964998,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 17,
+    "lead_id": "C0003348",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F05_DT1",
+    "score": 0.8495,
+    "score_interval": [
+      0.8333,
+      1.0
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 1996.9,
+    "summary": "Suspected non-technical loss (score 85%, medium confidence): Consumption fell 99% below this consumer's own history (lowest 7-day average in the scoring window); Feeder PEENYA_F05 unexplained loss rose by 6.6% of input in the same window (z = 17). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 99% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.995,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F05 unexplained loss rose by 6.6% of input in the same window (z = 17).",
+        "weight": 0.956,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +9% while this consumer changed by -9%.",
+        "weight": 0.703,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F05_DT1 unexplained loss rose by 11.7% of its input (z = 7).",
+        "weight": 0.689,
+        "kind": "supporting"
+      },
+      {
+        "code": "ZERO_READS",
+        "text": "Zero readings in 17% of intervals (longest run 7.8 days) versus 0% in the reference period.",
+        "weight": 0.173,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0004853",
+        "similarity": 0.9877,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0000695",
+        "similarity": 0.9845,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0002692",
+        "similarity": 0.9837,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0002712",
+        "similarity": 0.9773,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0004833",
+        "similarity": 0.9768,
+        "outcome": "meter_stop"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "meter_stop": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 18,
+    "lead_id": "C0004748",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F17_DT0",
+    "score": 0.9875,
+    "score_interval": [
+      0.9375,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 1638.1,
+    "summary": "Suspected non-technical loss (score 99%, high confidence): Peers of the same type on the same feeder changed by +8% while this consumer changed by -26%; Meter tamper events in the scoring window: magnetic interference x3, reverse current x1. Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +8% while this consumer changed by -26%.",
+        "weight": 1.36,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: magnetic interference x3, reverse current x1.",
+        "weight": 0.9,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 63% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.629,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F17 unexplained loss rose by 1.6% of input in the same window (z = 3).",
+        "weight": 0.498,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 40% rather than a gradual change.",
+        "weight": 0.395,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0003848",
+        "similarity": 0.9895,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0002636",
+        "similarity": 0.9842,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0000111",
+        "similarity": 0.9838,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0001613",
+        "similarity": 0.9836,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0000998",
+        "similarity": 0.982,
+        "outcome": "vacancy"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.6,
+      "outcomes": {
+        "temporary_tampering": 3,
+        "vacancy": 2
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 19,
+    "lead_id": "C0003472",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F05_DT6",
+    "score": 0.9685,
+    "score_interval": [
+      0.9231,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 1637.3,
+    "summary": "Suspected non-technical loss (score 97%, high confidence): Peers of the same type on the same feeder changed by +9% while this consumer changed by -35%; Transformer PEENYA_F05_DT6 unexplained loss rose by 27.8% of its input (z = 109). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +9% while this consumer changed by -35%.",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F05_DT6 unexplained loss rose by 27.8% of its input (z = 109).",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F05 unexplained loss rose by 6.6% of input in the same window (z = 17).",
+        "weight": 0.956,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 58% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.583,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 39% rather than a gradual change.",
+        "weight": 0.387,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0000216",
+        "similarity": 0.9926,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0004358",
+        "similarity": 0.9835,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0003295",
+        "similarity": 0.9806,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0001392",
+        "similarity": 0.98,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0002949",
+        "similarity": 0.9792,
+        "outcome": "vacancy"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.4,
+      "outcomes": {
+        "vacancy": 3,
+        "meter_bypass": 2
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 20,
+    "lead_id": "NELAMANGALA_F05_DT4",
+    "lead_type": "network",
+    "substation": "NELAMANGALA",
+    "dt_id": "NELAMANGALA_F05_DT4",
+    "score": 0.5386,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 2700.3,
+    "summary": "DT NELAMANGALA_F05_DT4: unexplained loss rose from -2.5% to 1.2% of input (7-day peak 2.6%, z = 21); 98 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT NELAMANGALA_F05_DT4: unexplained loss rose from -2.5% to 1.2% of input (7-day peak 2.6%, z = 21); 98 kWh is explained by consumer leads below it.",
+        "weight": 3.0685383349318593,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": false
+  },
+  {
+    "rank": 21,
+    "lead_id": "C0002693",
+    "lead_type": "consumer",
+    "substation": "NELAMANGALA",
+    "dt_id": "NELAMANGALA_F11_DT1",
+    "score": 0.6431,
+    "score_interval": [
+      0.125,
+      0.6667
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 2213.8,
+    "summary": "Suspected non-technical loss (score 64%, medium confidence): Peers of the same type on the same feeder changed by +8% while this consumer changed by -18%; Feeder NELAMANGALA_F11 unexplained loss rose by 2.9% of input in the same window (z = 9). Note: 5% of reads are missing; check meter communication first. Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +8% while this consumer changed by -18%.",
+        "weight": 1.015,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder NELAMANGALA_F11 unexplained loss rose by 2.9% of input in the same window (z = 9).",
+        "weight": 0.775,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer NELAMANGALA_F11_DT1 unexplained loss rose by 7.6% of its input (z = 6).",
+        "weight": 0.654,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 45% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.45,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 32% rather than a gradual change.",
+        "weight": 0.321,
+        "kind": "supporting"
+      },
+      {
+        "code": "MISSING_READS",
+        "text": "5% of reads are missing; check meter communication first.",
+        "weight": -0.154,
+        "kind": "mitigating"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0003295",
+        "similarity": 0.981,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0002508",
+        "similarity": 0.979,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0002949",
+        "similarity": 0.9785,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0004970",
+        "similarity": 0.9773,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0003472",
+        "similarity": 0.9769,
+        "outcome": "meter_bypass"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.2,
+      "outcomes": {
+        "vacancy": 4,
+        "meter_bypass": 1
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 22,
+    "lead_id": "C0003295",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F04_DT3",
+    "score": 0.6534,
+    "score_interval": [
+      0.125,
+      0.6667
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 2161.3,
+    "summary": "Suspected non-technical loss (score 65%, medium confidence): Peers of the same type on the same feeder changed by +8% while this consumer changed by -25%; Feeder PEENYA_F04 unexplained loss rose by 7.4% of input in the same window (z = 20). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +8% while this consumer changed by -25%.",
+        "weight": 1.318,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F04 unexplained loss rose by 7.4% of input in the same window (z = 20).",
+        "weight": 1.009,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 73% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.728,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F04_DT3 unexplained loss rose by 1.5% of its input (z = 6).",
+        "weight": 0.651,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 50% rather than a gradual change.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0002949",
+        "similarity": 0.9976,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0004786",
+        "similarity": 0.9948,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0002508",
+        "similarity": 0.9943,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0000919",
+        "similarity": 0.9937,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0000353",
+        "similarity": 0.9936,
+        "outcome": "vacancy"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.0,
+      "outcomes": {
+        "vacancy": 5
+      }
+    },
+    "sim_truth_hit": false
+  },
+  {
+    "rank": 23,
+    "lead_id": "C0004701",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F16_DT5",
+    "score": 0.9775,
+    "score_interval": [
+      0.9231,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 1449.3,
+    "summary": "Suspected non-technical loss (score 98%, high confidence): Transformer PEENYA_F16_DT5 unexplained loss rose by 8.7% of its input (z = 43); Peers of the same type on the same feeder changed by +10% while this consumer changed by -16%. Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F16_DT5 unexplained loss rose by 8.7% of its input (z = 43).",
+        "weight": 1.263,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +10% while this consumer changed by -16%.",
+        "weight": 1.009,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F16 unexplained loss rose by 3.4% of input in the same window (z = 7).",
+        "weight": 0.711,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 58% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.579,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x1, reverse current x2.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0002947",
+        "similarity": 0.9821,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0000025",
+        "similarity": 0.9805,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0003848",
+        "similarity": 0.9785,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0003623",
+        "similarity": 0.9783,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0002636",
+        "similarity": 0.9771,
+        "outcome": "temporary_tampering"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.6,
+      "outcomes": {
+        "temporary_tampering": 3,
+        "vacancy": 2
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 24,
+    "lead_id": "C0001801",
+    "lead_type": "consumer",
+    "substation": "NELAMANGALA",
+    "dt_id": "NELAMANGALA_F02_DT3",
+    "score": 0.996,
+    "score_interval": [
+      0.9545,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 1297.6,
+    "summary": "Suspected non-technical loss (score 100%, high confidence): Peers of the same type on the same feeder changed by +8% while this consumer changed by -32%; Meter tamper events in the scoring window: cover open x1, magnetic interference x3. Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +8% while this consumer changed by -32%.",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x1, magnetic interference x3.",
+        "weight": 1.1,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer NELAMANGALA_F02_DT3 unexplained loss rose by 3.7% of its input (z = 16).",
+        "weight": 0.937,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 45% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.454,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 32% rather than a gradual change.",
+        "weight": 0.316,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0003362",
+        "similarity": 0.986,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0002636",
+        "similarity": 0.9383,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0004748",
+        "similarity": 0.9374,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0003472",
+        "similarity": 0.9344,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0004669",
+        "similarity": 0.9338,
+        "outcome": "temporary_tampering"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "temporary_tampering": 3,
+        "meter_bypass": 2
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 25,
+    "lead_id": "C0000735",
+    "lead_type": "consumer",
+    "substation": "SHIMOGA",
+    "dt_id": "SHIMOGA_F06_DT5",
+    "score": 0.9367,
+    "score_interval": [
+      0.9091,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 1378.5,
+    "summary": "Suspected non-technical loss (score 94%, high confidence): Peers of the same type on the same feeder changed by +8% while this consumer changed by -33%; Feeder SHIMOGA_F06 unexplained loss rose by 5.1% of input in the same window (z = 15). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +8% while this consumer changed by -33%.",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder SHIMOGA_F06 unexplained loss rose by 5.1% of input in the same window (z = 15).",
+        "weight": 0.916,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer SHIMOGA_F06_DT5 unexplained loss rose by 6.1% of its input (z = 5).",
+        "weight": 0.59,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 58% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.58,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 37% rather than a gradual change.",
+        "weight": 0.366,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0003295",
+        "similarity": 0.995,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0002949",
+        "similarity": 0.992,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0000063",
+        "similarity": 0.9914,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0004482",
+        "similarity": 0.9908,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0004786",
+        "similarity": 0.9904,
+        "outcome": "vacancy"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.0,
+      "outcomes": {
+        "vacancy": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 26,
+    "lead_id": "PEENYA_F13_DT1",
+    "lead_type": "network",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F13_DT1",
+    "score": 0.5387,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 2386.0,
+    "summary": "DT PEENYA_F13_DT1: unexplained loss rose from 3.3% to 6.5% of input (7-day peak 11.2%, z = 22); 262 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT PEENYA_F13_DT1: unexplained loss rose from 3.3% to 6.5% of input (7-day peak 11.2%, z = 22); 262 kWh is explained by consumer leads below it.",
+        "weight": 3.141651481878129,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 27,
+    "lead_id": "C0002540",
+    "lead_type": "consumer",
+    "substation": "NELAMANGALA",
+    "dt_id": "NELAMANGALA_F09_DT1",
+    "score": 0.9328,
+    "score_interval": [
+      0.9091,
+      1.0
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 1265.4,
+    "summary": "Suspected non-technical loss (score 93%, medium confidence): Transformer NELAMANGALA_F09_DT1 unexplained loss rose by 14.8% of its input (z = 55); Meter tamper events in the scoring window: cover open x1, magnetic interference x1, reverse current x2. Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer NELAMANGALA_F09_DT1 unexplained loss rose by 14.8% of its input (z = 55).",
+        "weight": 1.343,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x1, magnetic interference x1, reverse current x2.",
+        "weight": 0.7,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder NELAMANGALA_F09 unexplained loss rose by 2.7% of input in the same window (z = 6).",
+        "weight": 0.66,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 30% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.302,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0004317",
+        "similarity": 0.9182,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0004369",
+        "similarity": 0.9153,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0004746",
+        "similarity": 0.8926,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0004899",
+        "similarity": 0.8848,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0004669",
+        "similarity": 0.8848,
+        "outcome": "temporary_tampering"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "temporary_tampering": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 28,
+    "lead_id": "PEENYA_F04_DT0",
+    "lead_type": "network",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F04_DT0",
+    "score": 0.9233,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 1256.3,
+    "summary": "DT PEENYA_F04_DT0: unexplained loss rose from -3.1% to 14.4% of input (7-day peak 20.6%, z = 100); 9,605 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT PEENYA_F04_DT0: unexplained loss rose from -3.1% to 14.4% of input (7-day peak 20.6%, z = 100); 9,605 kWh is explained by consumer leads below it.",
+        "weight": 4.611805917849639,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 29,
+    "lead_id": "C0000669",
+    "lead_type": "consumer",
+    "substation": "SHIMOGA",
+    "dt_id": "SHIMOGA_F06_DT2",
+    "score": 0.7767,
+    "score_interval": [
+      0.5,
+      1.0
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 1496.3,
+    "summary": "Suspected non-technical loss (score 78%, medium confidence): Feeder SHIMOGA_F06 unexplained loss rose by 5.1% of input in the same window (z = 15); Consumption fell 72% below this consumer's own history (lowest 7-day average in the scoring window). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder SHIMOGA_F06 unexplained loss rose by 5.1% of input in the same window (z = 15).",
+        "weight": 0.916,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 72% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.724,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x1, magnetic interference x1, power off x1.",
+        "weight": 0.7,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +9% while this consumer changed by -7%.",
+        "weight": 0.631,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 34% rather than a gradual change.",
+        "weight": 0.342,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0003848",
+        "similarity": 0.9713,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0000644",
+        "similarity": 0.9681,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0002589",
+        "similarity": 0.9679,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0001058",
+        "similarity": 0.9659,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0001319",
+        "similarity": 0.9653,
+        "outcome": "meter_bypass"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "temporary_tampering": 3,
+        "meter_bypass": 2
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 30,
+    "lead_id": "C0003362",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F05_DT1",
+    "score": 0.9983,
+    "score_interval": [
+      0.96,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 1014.3,
+    "summary": "Suspected non-technical loss (score 100%, high confidence): Meter tamper events in the scoring window: cover open x2, magnetic interference x3; Peers of the same type on the same feeder changed by +9% while this consumer changed by -18%. Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x2, magnetic interference x3.",
+        "weight": 1.3,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +9% while this consumer changed by -18%.",
+        "weight": 1.081,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F05 unexplained loss rose by 6.6% of input in the same window (z = 17).",
+        "weight": 0.956,
+        "kind": "supporting"
+      },
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F05_DT1 unexplained loss rose by 11.7% of its input (z = 7).",
+        "weight": 0.689,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 45% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.454,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 33% rather than a gradual change.",
+        "weight": 0.325,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0004669",
+        "similarity": 0.9634,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0002589",
+        "similarity": 0.9522,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0004748",
+        "similarity": 0.9494,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0002636",
+        "similarity": 0.9481,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0001319",
+        "similarity": 0.9438,
+        "outcome": "meter_bypass"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "temporary_tampering": 3,
+        "meter_bypass": 2
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 31,
+    "lead_id": "C0004853",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F18_DT2",
+    "score": 0.9662,
+    "score_interval": [
+      0.9231,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 1039.1,
+    "summary": "Suspected non-technical loss (score 97%, high confidence): Transformer PEENYA_F18_DT2 unexplained loss rose by 10.6% of its input (z = 31); Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F18_DT2 unexplained loss rose by 10.6% of its input (z = 31).",
+        "weight": 1.158,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 1.0,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +9% while this consumer changed by -11%.",
+        "weight": 0.824,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F18 unexplained loss rose by 3.9% of input in the same window (z = 9).",
+        "weight": 0.776,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x1.",
+        "weight": 0.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "ZERO_READS",
+        "text": "Zero readings in 18% of intervals (longest run 8.0 days) versus 0% in the reference period.",
+        "weight": 0.178,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0003348",
+        "similarity": 0.9877,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0004833",
+        "similarity": 0.9793,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0002692",
+        "similarity": 0.9776,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0004326",
+        "similarity": 0.9737,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0002712",
+        "similarity": 0.971,
+        "outcome": "meter_stop"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "meter_stop": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 32,
+    "lead_id": "NELAMANGALA_F04_DT0",
+    "lead_type": "network",
+    "substation": "NELAMANGALA",
+    "dt_id": "NELAMANGALA_F04_DT0",
+    "score": 0.5866,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 1583.5,
+    "summary": "DT NELAMANGALA_F04_DT0: unexplained loss rose from 0.8% to 2.9% of input (7-day peak 6.8%, z = 23); 7 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT NELAMANGALA_F04_DT0: unexplained loss rose from 0.8% to 2.9% of input (7-day peak 6.8%, z = 23); 7 kWh is explained by consumer leads below it.",
+        "weight": 3.1897872575704875,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 33,
+    "lead_id": "SIRA_KBCROSS_F03_DT0",
+    "lead_type": "network",
+    "substation": "SIRA_KBCROSS",
+    "dt_id": "SIRA_KBCROSS_F03_DT0",
+    "score": 0.8519,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 1082.7,
+    "summary": "DT SIRA_KBCROSS_F03_DT0: unexplained loss rose from -1.0% to 7.9% of input (7-day peak 14.5%, z = 56); 0 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT SIRA_KBCROSS_F03_DT0: unexplained loss rose from -1.0% to 7.9% of input (7-day peak 14.5%, z = 56); 0 kWh is explained by consumer leads below it.",
+        "weight": 4.048603333149273,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 34,
+    "lead_id": "C0003858",
+    "lead_type": "consumer",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F09_DT1",
+    "score": 0.8477,
+    "score_interval": [
+      0.8333,
+      1.0
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 1097.4,
+    "summary": "Suspected non-technical loss (score 85%, medium confidence): Transformer PEENYA_F09_DT1 unexplained loss rose by 21.9% of its input (z = 114); Feeder PEENYA_F09 unexplained loss rose by 7.4% of input in the same window (z = 18). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer PEENYA_F09_DT1 unexplained loss rose by 21.9% of its input (z = 114).",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder PEENYA_F09 unexplained loss rose by 7.4% of input in the same window (z = 18).",
+        "weight": 0.981,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 68% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.685,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +9% while this consumer changed by -8%.",
+        "weight": 0.673,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 31% rather than a gradual change.",
+        "weight": 0.313,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0004358",
+        "similarity": 0.97,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0003472",
+        "similarity": 0.9629,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0000216",
+        "similarity": 0.9525,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0004899",
+        "similarity": 0.952,
+        "outcome": "temporary_tampering"
+      },
+      {
+        "case_id": "C0003623",
+        "similarity": 0.9448,
+        "outcome": "vacancy"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.6,
+      "outcomes": {
+        "vacancy": 2,
+        "meter_bypass": 2,
+        "temporary_tampering": 1
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 35,
+    "lead_id": "C0000216",
+    "lead_type": "consumer",
+    "substation": "SHIMOGA",
+    "dt_id": "SHIMOGA_F01_DT3",
+    "score": 0.8875,
+    "score_interval": [
+      0.875,
+      1.0
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 1013.4,
+    "summary": "Suspected non-technical loss (score 89%, medium confidence): Transformer SHIMOGA_F01_DT3 unexplained loss rose by 15.5% of its input (z = 56); Peers of the same type on the same feeder changed by +7% while this consumer changed by -26%. Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer SHIMOGA_F01_DT3 unexplained loss rose by 15.5% of its input (z = 56).",
+        "weight": 1.348,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +7% while this consumer changed by -26%.",
+        "weight": 1.324,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder SHIMOGA_F01 unexplained loss rose by 3.2% of input in the same window (z = 20).",
+        "weight": 1.022,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 71% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.707,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 56% rather than a gradual change.",
+        "weight": 0.562,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0001388",
+        "similarity": 0.9937,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0004358",
+        "similarity": 0.9927,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0003472",
+        "similarity": 0.9926,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0002949",
+        "similarity": 0.9906,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0003295",
+        "similarity": 0.9902,
+        "outcome": "vacancy"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.4,
+      "outcomes": {
+        "vacancy": 3,
+        "meter_bypass": 2
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 36,
+    "lead_id": "C0002530",
+    "lead_type": "consumer",
+    "substation": "NELAMANGALA",
+    "dt_id": "NELAMANGALA_F09_DT1",
+    "score": 0.361,
+    "score_interval": [
+      0.125,
+      0.1667
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 2463.3,
+    "summary": "Suspected non-technical loss (score 36%, medium confidence): Transformer NELAMANGALA_F09_DT1 unexplained loss rose by 14.8% of its input (z = 55); Peers of the same type on the same feeder changed by +8% while this consumer changed by -21%. Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "DT_RESIDUAL",
+        "text": "Transformer NELAMANGALA_F09_DT1 unexplained loss rose by 14.8% of its input (z = 55).",
+        "weight": 1.343,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +8% while this consumer changed by -21%.",
+        "weight": 1.167,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 85% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.848,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 84% rather than a gradual change.",
+        "weight": 0.842,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder NELAMANGALA_F09 unexplained loss rose by 2.7% of input in the same window (z = 6).",
+        "weight": 0.66,
+        "kind": "supporting"
+      },
+      {
+        "code": "TAMPER_EVENTS",
+        "text": "Meter tamper events in the scoring window: cover open x1.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0000216",
+        "similarity": 0.9949,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0001388",
+        "similarity": 0.9907,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0003472",
+        "similarity": 0.9905,
+        "outcome": "meter_bypass"
+      },
+      {
+        "case_id": "C0004358",
+        "similarity": 0.99,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0001392",
+        "similarity": 0.9886,
+        "outcome": "meter_bypass"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.8,
+      "outcomes": {
+        "meter_bypass": 4,
+        "vacancy": 1
+      }
+    },
+    "sim_truth_hit": false
+  },
+  {
+    "rank": 37,
+    "lead_id": "PEENYA_F16_DT5",
+    "lead_type": "network",
+    "substation": "PEENYA",
+    "dt_id": "PEENYA_F16_DT5",
+    "score": 0.7117,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 1237.2,
+    "summary": "DT PEENYA_F16_DT5: unexplained loss rose from -0.5% to 4.6% of input (7-day peak 8.2%, z = 43); 1,649 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT PEENYA_F16_DT5: unexplained loss rose from -0.5% to 4.6% of input (7-day peak 8.2%, z = 43); 1,649 kWh is explained by consumer leads below it.",
+        "weight": 3.7894055195354026,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 38,
+    "lead_id": "NELAMANGALA_F05_DT3",
+    "lead_type": "network",
+    "substation": "NELAMANGALA",
+    "dt_id": "NELAMANGALA_F05_DT3",
+    "score": 0.6275,
+    "score_interval": null,
+    "confidence": "network",
+    "expected_kwh_at_stake": 1389.7,
+    "summary": "DT NELAMANGALA_F05_DT3: unexplained loss rose from -0.6% to 3.5% of input (7-day peak 6.2%, z = 27); 18 kWh is explained by consumer leads below it.",
+    "reason_codes": [
+      {
+        "code": "DT_UNEXPLAINED_LOSS",
+        "text": "DT NELAMANGALA_F05_DT3: unexplained loss rose from -0.6% to 3.5% of input (7-day peak 6.2%, z = 27); 18 kWh is explained by consumer leads below it.",
+        "weight": 3.326675192448151,
+        "kind": "supporting"
+      },
+      {
+        "code": "PATROL_FOR_UNMETERED_LOAD",
+        "text": "Consumer meters below this node do not account for the residual: patrol the lines for hooks / direct taps and audit service connections.",
+        "weight": 0.5,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [],
+    "precedent": {},
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 39,
+    "lead_id": "C0001110",
+    "lead_type": "consumer",
+    "substation": "SIRA_KBCROSS",
+    "dt_id": "SIRA_KBCROSS_F02_DT3",
+    "score": 0.7669,
+    "score_interval": [
+      0.5,
+      1.0
+    ],
+    "confidence": "medium",
+    "expected_kwh_at_stake": 1081.4,
+    "summary": "Suspected non-technical loss (score 77%, medium confidence): Feeder SIRA_KBCROSS_F02 unexplained loss rose by 11.7% of input in the same window (z = 49); Peers of the same type on the same feeder changed by +6% while this consumer changed by -12%. Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder SIRA_KBCROSS_F02 unexplained loss rose by 11.7% of input in the same window (z = 49).",
+        "weight": 1.305,
+        "kind": "supporting"
+      },
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +6% while this consumer changed by -12%.",
+        "weight": 0.642,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 54% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 0.539,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0004970",
+        "similarity": 0.9821,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0000359",
+        "similarity": 0.9777,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0003080",
+        "similarity": 0.9774,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0000893",
+        "similarity": 0.9763,
+        "outcome": "vacancy"
+      },
+      {
+        "case_id": "C0003506",
+        "similarity": 0.9744,
+        "outcome": "vacancy"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 0.0,
+      "outcomes": {
+        "vacancy": 5
+      }
+    },
+    "sim_truth_hit": true
+  },
+  {
+    "rank": 40,
+    "lead_id": "C0000659",
+    "lead_type": "consumer",
+    "substation": "SHIMOGA",
+    "dt_id": "SHIMOGA_F06_DT1",
+    "score": 0.9407,
+    "score_interval": [
+      0.9091,
+      1.0
+    ],
+    "confidence": "high",
+    "expected_kwh_at_stake": 832.1,
+    "summary": "Suspected non-technical loss (score 94%, high confidence): Peers of the same type on the same feeder changed by +6% while this consumer changed by -50%; Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window). Requires field verification.",
+    "reason_codes": [
+      {
+        "code": "PEER_DIVERGENCE",
+        "text": "Peers of the same type on the same feeder changed by +6% while this consumer changed by -50%.",
+        "weight": 1.5,
+        "kind": "supporting"
+      },
+      {
+        "code": "CONSUMPTION_DROP",
+        "text": "Consumption fell 100% below this consumer's own history (lowest 7-day average in the scoring window).",
+        "weight": 1.0,
+        "kind": "supporting"
+      },
+      {
+        "code": "FEEDER_RESIDUAL",
+        "text": "Feeder SHIMOGA_F06 unexplained loss rose by 5.1% of input in the same window (z = 15).",
+        "weight": 0.916,
+        "kind": "supporting"
+      },
+      {
+        "code": "STEP_CHANGE",
+        "text": "Sudden sustained step drop of 54% rather than a gradual change.",
+        "weight": 0.541,
+        "kind": "supporting"
+      },
+      {
+        "code": "ZERO_READS",
+        "text": "Zero readings in 53% of intervals (longest run 24.0 days) versus 0% in the reference period.",
+        "weight": 0.532,
+        "kind": "supporting"
+      }
+    ],
+    "similar_cases": [
+      {
+        "case_id": "C0002829",
+        "similarity": 0.9979,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0002383",
+        "similarity": 0.9938,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0002733",
+        "similarity": 0.9912,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0001125",
+        "similarity": 0.9908,
+        "outcome": "meter_stop"
+      },
+      {
+        "case_id": "C0003801",
+        "similarity": 0.9906,
+        "outcome": "meter_stop"
+      }
+    ],
+    "precedent": {
+      "k": 5,
+      "confirmed_theft_share": 1.0,
+      "outcomes": {
+        "meter_stop": 5
+      }
+    },
+    "sim_truth_hit": true
+  }
+]
