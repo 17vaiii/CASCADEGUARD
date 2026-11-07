@@ -15,7 +15,10 @@ def test_health():
     assert res.json() == {"status": "ok", "storage_mode": "local"}
 
 
-def test_audit_workflow():
+def test_audit_workflow(tmp_path, monkeypatch):
+    import cascadeguard.api.audit as audit_module
+    monkeypatch.setattr(audit_module, "DEFAULT_DB", tmp_path / "audit.sqlite3")
+
     # 1. Create audit
     req = {
         "recommendation": {"action": "trip_line_10", "reason": "overcurrent_prevent"},
