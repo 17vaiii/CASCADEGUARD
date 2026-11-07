@@ -146,6 +146,7 @@ def solve_milp(sens: Sensitivity, state: OperatingState, target_pct: float,
         solver = pywraplp.Solver.CreateSolver("CBC")
     solver.SetTimeLimit(int(float(opt["time_limit_s"]) * 1000))
     u, y, terms = {}, {}, []
+    tie_up, tie_dn = None, None
     for k, (name, kind) in enumerate(zip(sens.controls, sens.kinds)):
         if kind == "switch":
             u[name] = solver.IntVar(0, 1, name)
@@ -155,6 +156,7 @@ def solve_milp(sens: Sensitivity, state: OperatingState, target_pct: float,
         if kind == "tie":
             up = solver.NumVar(0, max(sens.upper[k], 0.0), "tie_up")
             dn = solver.NumVar(0, max(-sens.lower[k], 0.0), "tie_dn")
+            tie_up, tie_dn = up, dn
             u[name] = up - dn
             y[name] = solver.BoolVar("y_tie")
             big = max(sens.upper[k], -sens.lower[k], 1.0)
@@ -176,6 +178,24 @@ def solve_milp(sens: Sensitivity, state: OperatingState, target_pct: float,
     if hint:
         hv, hval = [], []
         for name, val in hint.items():
+            if name == "tie" and tie_up is not None and tie_dn is not None:
+                v = float(val)
+                if v > 0:
+                    hv.append(tie_up)
+                    hval.append(v)
+                    hv.append(tie_dn)
+                    hval.append(0.0)
+                elif v < 0:
+                    hv.append(tie_up)
+                    hval.append(0.0)
+                    hv.append(tie_dn)
+                    hval.append(-v)
+                else:
+                    hv.append(tie_up)
+                    hval.append(0.0)
+                    hv.append(tie_dn)
+                    hval.append(0.0)
+                continue
             var = u.get(name)
             if var is not None and hasattr(var, "solution_value"):
                 hv.append(var)

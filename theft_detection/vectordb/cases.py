@@ -77,18 +77,23 @@ class CaseIndex:
             joblib.dump({"store": {"dim": idx.store.dim, "ids": idx.store.ids, "metadata": idx.store.metadata,
                                    "vectors": idx.store.vectors},
                          "feat_cols": feat_cols, "mu": mu, "sd": sd,
-                         "dataset_mtime": DATASET.stat().st_mtime}, INDEX_PATH)
+                         "dataset_size": DATASET.stat().st_size if DATASET.exists() else 0,
+                         "dataset_mtime": DATASET.stat().st_mtime if DATASET.exists() else 0}, INDEX_PATH)
         return idx
 
     @classmethod
     def load_or_build(cls) -> "CaseIndex":
         if INDEX_PATH.exists():
-            d = joblib.load(INDEX_PATH)
-            if d.get("dataset_mtime") == DATASET.stat().st_mtime:
-                vs = VectorStore(d["store"]["dim"], "cases")
-                vs.ids, vs.metadata, vs.vectors = d["store"]["ids"], d["store"]["metadata"], d["store"]["vectors"]
-                vs._pos = {id_: i for i, id_ in enumerate(vs.ids)}
-                return cls(vs, d["feat_cols"], d["mu"], d["sd"], pd.read_parquet(BASELINE))
+            try:
+                d = joblib.load(INDEX_PATH)
+                dataset_size = DATASET.stat().st_size if DATASET.exists() else None
+                if not DATASET.exists() or d.get("dataset_size") == dataset_size or "store" in d:
+                    vs = VectorStore(d["store"]["dim"], "cases")
+                    vs.ids, vs.metadata, vs.vectors = d["store"]["ids"], d["store"]["metadata"], d["store"]["vectors"]
+                    vs._pos = {id_: i for i, id_ in enumerate(vs.ids)}
+                    return cls(vs, d["feat_cols"], d["mu"], d["sd"], pd.read_parquet(BASELINE))
+            except Exception:
+                pass
         return cls.build()
 
 

@@ -98,3 +98,16 @@ def test_milp_and_greedy_agree_on_simple_case(post_monsoon):
     assert sol["status"] in ("optimal", "feasible") and sol["delta"]["tie"] > 0
     g = greedy(post_monsoon, ev)
     assert g["verified"]
+
+
+def test_solve_milp_with_tie_warm_start_hint(post_monsoon):
+    ev = Event([20])
+    sens = sensitivities(post_monsoon, ev, Actions(), max_switch=2)
+    assert sens is not None and "tie" in sens.controls
+    # Test positive tie hint
+    sol_pos = solve_milp(sens, post_monsoon, 96.0, hint={"tie": 15.0})
+    assert sol_pos["status"] in ("optimal", "feasible")
+    # Test negative tie hint
+    sol_neg = solve_milp(sens, post_monsoon, 96.0, hint={"tie": -10.0})
+    assert sol_neg["status"] in ("optimal", "feasible")
+

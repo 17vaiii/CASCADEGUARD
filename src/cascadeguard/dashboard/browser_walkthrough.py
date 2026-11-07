@@ -146,6 +146,10 @@ def walkthrough(out_dir: Path, port: int = PORT) -> dict:
                 report["video"] = str(target)
     finally:
         server.terminate()
+        try:
+            server.wait(timeout=5)
+        except Exception:
+            server.kill()
     report["ok"] = not (report["page_errors"] or any(s["exceptions"] for s in report["steps"]))
     (out_dir / "walkthrough_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
