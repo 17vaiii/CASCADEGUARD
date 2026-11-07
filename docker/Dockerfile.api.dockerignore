@@ -1,0 +1,10 @@
+# Applies only to docker/Dockerfile.api. Exclude everything, then allow what the image needs.
+**
+!requirements.txt
+!requirements-p5.txt
+!src/**
+!configs/**
+!contracts/**
+!data/models/**
+**/__pycache__
+**/*.egg-info

@@ -1,0 +1,15 @@
+# OWNER: P5 | STATUS: ACTIVE
+# Applies only to docker/Dockerfile.dashboard. Exclude everything, then allow what the image needs.
+**
+!requirements.txt
+!requirements-p5.txt
+!src/**
+!configs/**
+!contracts/**
+!docs/results_table.md
+!data/models/**
+!data/processed/theft/**
+!data/processed/mitigation/**
+data/processed/theft/dataset
+**/__pycache__
+**/*.egg-info

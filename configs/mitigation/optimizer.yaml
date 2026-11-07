@@ -1,1 +1,61 @@
-# OWNER: P5 | NEEDS: P1 | STATUS: LOCKED (until P1 handoff done)
+# OWNER: P5 | NEEDS: P1 | STATUS: ACTIVE
+# P5 mitigation, retrieval and copilot configuration. All values are ASSUMPTIONS (source: assumed)
+# for the simulated student build. The system is advisory only: no write path to any control system.
+
+seed: 42
+
+grid_tie:                       # equivalent Karnataka state-grid interconnection near Bengaluru
+  bus: NELAMANGALA              # P1's corridor model is single-source; this adds the second resource
+  max_import_mw: 200.0          # assumed transfer limit of the tie
+  min_import_mw: 0.0
+  power_factor: 1.0             # active-power import only (no reactive support assumed)
+  source: assumed
+
+dispatch:
+  hour_of_day: 18               # evening peak; hydro energy already used = base dispatch x hours
+  response_window_min: 10       # hydro may ramp ramp_rate x window within the remedial-action window
+  reservoir_floor_pct: 30.0     # H3: no hydro ramp-up when the reservoir is at or below this level
+  budget_use_fraction: 0.85     # base schedule uses at most this share of the daily energy budget
+  emergency_duration_h: 2.0     # remedial hydro ramp is held for this long, then returns to schedule
+  hydro_reserve_mw: 0.0         # optional spinning reserve kept back from the optimizer
+
+limits:
+  loading_trip_pct: 100.0       # P1 overcurrent relay threshold
+  loading_target_pct: 96.0      # optimizer target (margin below the trip threshold)
+  vm_min_pu: 0.92               # emergency voltage band (assumed)
+  vm_max_pu: 1.08
+  ufls_overshoot: 1.25          # uncontrolled under-frequency load shedding sheds deficit x this
+
+costs:                          # relative costs; the objective is "smallest fix" (PRD R9)
+  shed_per_mw: 1000.0
+  tie_per_mw: 15.0
+  hydro_per_mw: 5.0
+  switch: 300.0
+  per_action: 60.0              # pushes towards fewer distinct actions
+
+optimizer:
+  solver: SCIP
+  time_limit_s: 5.0
+  perturb_mw: 10.0              # finite-difference step for AC sensitivities
+  max_switch_candidates: 6
+  closed_loop_iterations: 3     # re-linearise and re-solve if verification fails
+  margin_step_pct: 3.0          # tighten the target by this much per failed iteration
+
+greedy:
+  max_steps: 12
+
+contingencies:                  # evaluation set per season
+  n2_sample: 60
+  tie_loss: true                # loss of the state-grid tie (forces hydro ramp-up / shedding)
+  tie_loss_with_n1_sample: 20
+
+retrieval:                      # R8 case-based retrieval / warm start
+  library_fraction: 0.7
+  k: 3
+
+copilot:                        # R11 incident brief
+  llm_enabled: true             # used only when Anthropic credentials resolve
+  model: claude-opus-5-5
+  effort: medium
+  max_tokens: 16000
+  top_k_passages: 5

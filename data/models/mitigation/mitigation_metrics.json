@@ -1,0 +1,190 @@
+{
+  "seed": 42,
+  "quick": false,
+  "config_assumptions": {
+    "grid_tie": {
+      "bus": "NELAMANGALA",
+      "max_import_mw": 200.0,
+      "min_import_mw": 0.0,
+      "power_factor": 1.0,
+      "source": "assumed"
+    },
+    "dispatch": {
+      "hour_of_day": 18,
+      "response_window_min": 10,
+      "reservoir_floor_pct": 30.0,
+      "budget_use_fraction": 0.85,
+      "emergency_duration_h": 2.0,
+      "hydro_reserve_mw": 0.0
+    },
+    "limits": {
+      "loading_trip_pct": 100.0,
+      "loading_target_pct": 96.0,
+      "vm_min_pu": 0.92,
+      "vm_max_pu": 1.08,
+      "ufls_overshoot": 1.25
+    }
+  },
+  "states": {
+    "monsoon": {
+      "tie_mw": 0.0,
+      "hydro": {
+        "base_mw": 315.18920767817355,
+        "min_mw": 200.0,
+        "max_mw": 465.19,
+        "ramp_limit_mw": 150.0,
+        "energy_cap_mw": 2054.4323769654793,
+        "limited_by_up": "ramp_up",
+        "limited_by_down": "capacity_min",
+        "ramp_up_allowed": true
+      },
+      "load_mw": 306.0,
+      "capacitors_switched_out": [
+        "CAP_SIRA_KBCROSS"
+      ]
+    },
+    "post_monsoon": {
+      "tie_mw": 0.0,
+      "hydro": {
+        "base_mw": 353.56900448366076,
+        "min_mw": 233.57,
+        "max_mw": 473.57,
+        "ramp_limit_mw": 120.0,
+        "energy_cap_mw": 939.2929865490178,
+        "limited_by_up": "ramp_up",
+        "limited_by_down": "ramp_down",
+        "ramp_up_allowed": true
+      },
+      "load_mw": 342.0,
+      "capacitors_switched_out": []
+    },
+    "summer": {
+      "tie_mw": 200.0,
+      "hydro": {
+        "base_mw": 217.98680258173232,
+        "min_mw": 137.99,
+        "max_mw": 297.99,
+        "ramp_limit_mw": 80.0,
+        "energy_cap_mw": 346.03959225480304,
+        "limited_by_up": "ramp_up",
+        "limited_by_down": "ramp_down",
+        "ramp_up_allowed": true
+      },
+      "load_mw": 414.0,
+      "capacitors_switched_out": [
+        "CAP_NELAMANGALA",
+        "CAP_SIRA_KBCROSS",
+        "CAP_SHIMOGA"
+      ]
+    }
+  },
+  "mitigation": [
+    {
+      "season": "monsoon",
+      "events": 157,
+      "needing_mitigation": 0
+    },
+    {
+      "season": "post_monsoon",
+      "events": 157,
+      "needing_mitigation": 53,
+      "before_mean_lost_pct": 100.0,
+      "greedy_mean_lost_pct": 0.8339364976916372,
+      "opt_mean_lost_pct": 0.7100517782103936,
+      "greedy_pass_rate": 1.0,
+      "opt_pass_rate": 1.0,
+      "opt_fallback_rate": 0.0,
+      "opt_unverified_rate": 0.0,
+      "both_verified": 53,
+      "opt_mean_actions": 1.0566037735849056,
+      "greedy_mean_actions": 1.1132075471698113,
+      "opt_mean_shed_mw": 2.4283770814795465,
+      "greedy_mean_shed_mw": 2.8520628221053994,
+      "opt_mean_time_s": 0.633397245274435,
+      "opt_mean_solve_time_s": 0.017775194337240088,
+      "hydro_ramp_up_cases": 0,
+      "hydro_ramp_down_cases": 53,
+      "hydro_bound_violations": 0,
+      "signatures": {
+        "tie_up": 50,
+        "shed:PEENYA": 3
+      }
+    },
+    {
+      "season": "summer",
+      "events": 157,
+      "needing_mitigation": 21,
+      "before_mean_lost_pct": 42.89064386704196,
+      "greedy_mean_lost_pct": 29.755027908774178,
+      "opt_mean_lost_pct": 29.749582547523183,
+      "greedy_pass_rate": 1.0,
+      "opt_pass_rate": 1.0,
+      "opt_fallback_rate": 0.0,
+      "opt_unverified_rate": 0.0,
+      "both_verified": 21,
+      "opt_mean_actions": 1.0,
+      "greedy_mean_actions": 1.0,
+      "opt_mean_shed_mw": 123.16327174674598,
+      "greedy_mean_shed_mw": 123.1858155423251,
+      "opt_mean_time_s": 1.6859660476246583,
+      "opt_mean_solve_time_s": 0.02331616190661277,
+      "hydro_ramp_up_cases": 21,
+      "hydro_ramp_down_cases": 0,
+      "hydro_bound_violations": 0,
+      "signatures": {
+        "shed:PEENYA": 21
+      }
+    }
+  ],
+  "retrieval": {
+    "library_cases": 52,
+    "query_cases": 22,
+    "k": 3,
+    "physics": {
+      "precision_at_k": 0.9696969696969696,
+      "precision_at_1": 1.0,
+      "majority_class_baseline": 0.6818181818181818,
+      "n_vectors": 52
+    },
+    "gnn": {
+      "precision_at_k": 0.9848484848484848,
+      "precision_at_1": 0.9545454545454546,
+      "majority_class_baseline": 0.6818181818181818,
+      "n_vectors": 52
+    },
+    "warm_start": {
+      "n": 22,
+      "precedent_direct_share": 1.0,
+      "warm_pass_rate": 1.0,
+      "cold_pass_rate": 1.0,
+      "warm_mean_time_s": 0.20947207273407417,
+      "cold_mean_time_s": 1.0997723772836088,
+      "speedup": 5.25021003004909,
+      "warm_mean_lost_pct": 9.457839262187091,
+      "cold_mean_lost_pct": 9.468968690409506,
+      "warm_mean_actions": 1.0,
+      "cold_mean_actions": 1.0,
+      "seeded_pass_rate": 1.0,
+      "seeded_mean_time_s": 0.5889885909114541,
+      "seeded_mean_lost_pct": 9.474073835511724,
+      "seeded_mean_actions": 1.0
+    }
+  },
+  "theft_aware_mitigation": {
+    "status": "ok",
+    "season": "monsoon",
+    "intensity": 3.0,
+    "true_hidden_mw": 12.4853,
+    "est_hidden_mw": 12.385,
+    "events_needing_mitigation_on_truth": 22,
+    "scada_plans_said_no_action": 22,
+    "scada_plans_verified_on_truth": 0,
+    "aware_plans_verified_on_truth": 22,
+    "mean_lost_pct_on_truth": {
+      "no_action": 100.00147573530082,
+      "scada_plan": 100.00147573530082,
+      "aware_plan": 0.0
+    }
+  },
+  "runtime_s": 93.9
+}

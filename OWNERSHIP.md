@@ -51,15 +51,17 @@ This file defines the strict file and folder ownership across the 5 project role
 | `src/cascadeguard/cascade_ml/` | P3 | P1,P2 | Active |
 | `tests/cascade_ml/` | P3 | - | Active |
 | `docs/report/sec_p3.md` | P3 | - | Active |
-| `configs/theft/models.yaml` | P4 | P2 | Locked |
-| `src/cascadeguard/theft/` | P4 | P1,P2,P3 | Locked |
-| `tests/theft/` | P4 | - | Locked |
-| `docs/report/sec_p4.md` | P4 | - | Locked |
-| `configs/mitigation/` | P5 | P1 | Locked |
-| `src/cascadeguard/mitigation/` | P5 | P1 | Locked |
-| `src/cascadeguard/retrieval/` | P5 | P2,P3 | Locked |
-| `src/cascadeguard/copilot/` | P5 | - | Locked |
-| `src/cascadeguard/dashboard/` | P5 | P2,P3,P4 | Locked |
-| `docker/Dockerfile.dashboard` | P5 | P2 | Locked |
-| `tests/mitigation/`, `tests/retrieval/`, `tests/dashboard/` | P5 | - | Locked |
-| `docs/report/sec_p5.md` | P5 | - | Locked |
+| `configs/theft/models.yaml` | P4 | P2 | Active (complete) |
+| `src/cascadeguard/theft/` | P4 | P1,P2,P3 | Active (complete) |
+| `tests/theft/` | P4 | - | Active (complete) |
+| `docs/report/sec_p4.md` | P4 | - | Active (complete) |
+| `docs/p4/` | P4 | - | Active (plan, status, hand-off) |
+| `configs/mitigation/` | P5 | P1 | Active (complete) |
+| `src/cascadeguard/mitigation/` | P5 | P1 | Active (complete) |
+| `src/cascadeguard/retrieval/` | P5 | P2,P3 | Active (complete) |
+| `src/cascadeguard/copilot/` | P5 | - | Active (complete) |
+| `src/cascadeguard/dashboard/` | P5 | P2,P3,P4 | Active (complete) |
+| `docker/Dockerfile.dashboard` | P5 | P2 | Active (complete) |
+| `tests/mitigation/`, `tests/retrieval/`, `tests/dashboard/` | P5 | - | Active (complete) |
+| `docs/report/sec_p5.md` | P5 | - | Active (complete) |
+| `docs/p5/`, `requirements-p5.txt` | P5 | - | Active (plan, status, demo, extra deps) |

@@ -17,6 +17,18 @@ services:
       - mlflow
       - qdrant
 
+  dashboard:
+    profiles: ["local-platform"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
+    ports:
+      - "127.0.0.1:8501:8501"
+    environment:
+      CASCADEGUARD_AUDIT_DB: /workspace/data/audit/recommendations.sqlite3
+    volumes:
+      - ./data:/workspace/data
+
   mlflow:
     profiles: ["local-platform"]
     build:

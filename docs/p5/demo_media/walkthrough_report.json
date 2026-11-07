@@ -1,0 +1,88 @@
+{
+  "steps": [
+    {
+      "step": "start",
+      "exceptions": [],
+      "metrics": {}
+    },
+    {
+      "step": "post_monsoon_n1",
+      "exceptions": [],
+      "metrics": {
+        "Load lost, no action": "100.0%",
+        "Load lost, with plan": "0.0%",
+        "Actions": "1",
+        "Simulator verification": "PASSED"
+      }
+    },
+    {
+      "step": "summer_tie_loss",
+      "exceptions": [],
+      "metrics": {
+        "Load lost, no action": "42.2%",
+        "Load lost, with plan": "29.7%",
+        "Actions": "1",
+        "Simulator verification": "PASSED"
+      }
+    },
+    {
+      "step": "monsoon_scada",
+      "exceptions": [],
+      "metrics": {
+        "Load lost, no action": "0.0%",
+        "Load lost, with plan": "0.0%",
+        "Actions": "0",
+        "Simulator verification": "PASSED"
+      }
+    },
+    {
+      "step": "monsoon_theft_aware",
+      "exceptions": [],
+      "metrics": {
+        "Load lost, no action": "100.0%",
+        "Load lost, with plan": "0.0%",
+        "Actions": "1",
+        "Simulator verification": "PASSED"
+      }
+    },
+    {
+      "step": "unmitigable_n2",
+      "exceptions": [],
+      "metrics": {
+        "Load lost, no action": "100.0%",
+        "Load lost, with plan": "100.0%",
+        "Actions": "0",
+        "Simulator verification": "FAILED"
+      }
+    },
+    {
+      "step": "loss_and_theft",
+      "exceptions": [],
+      "metrics": {
+        "Feeder input (scoring window)": "15,368 MWh",
+        "Technical loss (estimated)": "2.68%",
+        "Unexplained residual": "3.22%",
+        "Corridor transmission loss": "3.49%"
+      }
+    },
+    {
+      "step": "results",
+      "exceptions": [],
+      "metrics": {}
+    },
+    {
+      "step": "role_planner",
+      "exceptions": [],
+      "metrics": {}
+    },
+    {
+      "step": "role_loss",
+      "exceptions": [],
+      "metrics": {}
+    }
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "video": "docs\\p5\\demo_media\\demo_walkthrough.webm",
+  "ok": true
+}

@@ -15,3 +15,10 @@ qdrant-client==1.12.1
 fsspec>=2024.6
 s3fs>=2024.6
 gcsfs>=2024.6
+# Imported by the root cascade_ml, theft and mitigation packages.
+scikit-learn>=1.5,<2
+scipy>=1.13,<2
+pyyaml>=6,<7
+networkx>=3,<4
+torch>=2.3,<3
+torch-geometric>=2.5,<3

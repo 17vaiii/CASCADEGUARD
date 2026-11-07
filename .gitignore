@@ -37,6 +37,13 @@ experiments/*.db*
 experiments/mlartifacts/
 mlruns/
 
+# P4 raw simulated dataset (~80 MB; regenerate with `python -m cascadeguard.theft.pipeline`).
+# Result tables in data/processed/theft/ and the trained bundle stay committable: they are the
+# fallback demo data for the dashboard after a fresh clone (PRD P5-9).
+data/processed/theft/dataset/
+data/processed/root_gnn_dataset.parquet
+*.egg-info/
+
 # editor / OS
 .vscode/
 .idea/

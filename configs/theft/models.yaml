@@ -1,1 +1,105 @@
-# OWNER: P4 | NEEDS: P2 | STATUS: LOCKED (until P1 handoff done)
+# OWNER: P4 | NEEDS: P2 | STATUS: ACTIVE
+# P4 theft & loss analytics configuration. Every electrical / behavioural value is an
+# ASSUMPTION for the simulated student build (source: assumed) until verified with BESCOM data.
+
+seed: 42
+
+simulation:                     # theft/feeder_sim.py
+  days: 90
+  interval_minutes: 60
+  history_days: 45              # reference period; injected theft starts after this
+  start: "2025-03-01"           # summer onset (assumed)
+  feeders_per_substation:       # 11 kV feeders under each corridor substation (assumed)
+    SHIMOGA: 4
+    SIRA_KBCROSS: 3
+    NELAMANGALA: 6
+    PEENYA: 11
+  area_by_substation:           # used for the bias audit (P4-11)
+    SHIMOGA: peri_urban
+    SIRA_KBCROSS: rural
+    NELAMANGALA: peri_urban
+    PEENYA: urban
+  dts_per_feeder: [4, 7]        # inclusive range
+  consumers_per_dt: [12, 28]
+  dt_metered_fraction: 0.6      # share of distribution transformers with an energy meter
+  theft_fraction: 0.05          # consumers with an injected theft event
+  hotspot_feeder_fraction: 0.35 # theft is spatially clustered: share of feeders that are hotspots
+  hotspot_theft_share: 0.85     # share of thieves located on hotspot feeders
+  lookalike_fraction: 0.10      # consumers with a legitimate change (hard negatives, P4-9)
+  min_event_days: 7
+  holidays: ["2025-04-14", "2025-05-01"]   # assumed public holidays (commercial demand dips)
+  meter_noise_pct: {feeder: 0.5, dt: 1.0}  # 1-sigma relative noise of input meters (per interval)
+  meter_bias_pct: {feeder: 0.8, dt: 1.5}   # 1-sigma constant calibration error per input meter
+  meter_drift_pct_per_week: 0.15           # 1-sigma random-walk drift of input meter error
+  streetlight_share: [0.01, 0.025]         # legitimate unbilled night load, share of feeder energy
+  new_connection_feeder_fraction: 0.2      # feeders with an unbilled new legitimate connection
+  new_connection_share: [0.005, 0.02]      # its energy as a share of feeder energy (hard negative)
+  comm_failure_fraction: 0.03   # consumers with a meter communication gap (NaN reads, hard negative)
+  tamper:                       # T7 event logs
+    thief_event_prob: {meter_bypass: 0.35, meter_stop: 0.55, temporary_tampering: 0.9,
+                       night_tapping: 0.05, hooking: 0.0}
+    spurious_daily_rate: 0.004  # false tamper alarms per normal consumer per day
+
+feeder_electrical:              # theft/technical_loss.py (assumed 11 kV overhead, ACSR Rabbit)
+  vn_kv: 11.0
+  r_ohm_per_km: 0.55
+  x_ohm_per_km: 0.35
+  c_nf_per_km: 10.0
+  max_i_ka: 0.20
+  segment_km: [0.4, 1.6]
+  power_factor: 0.92
+  lv_r_ohm_per_km: 0.08         # aggregated 433 V network behind each DT (~4 parallel LV circuits)
+  lv_x_ohm_per_km: 0.03
+  lv_km: 0.25
+  dt_ratings_kva: [100, 250, 500]
+  dt_loss_kw:                   # [no-load (iron), full-load copper] per rating (assumed BIS-like)
+    "100": [0.26, 1.80]
+    "250": [0.50, 3.20]
+    "500": [0.82, 5.10]
+  fit_scales: [0.1, 0.25, 0.4, 0.55, 0.7, 0.85, 1.0, 1.2, 1.4, 1.6]
+
+energy_balance:                 # theft/energy_balance.py
+  flag_z: 3.0                   # residual-change z-score that flags a feeder / DT
+  top_n_feeders: 5
+
+features:                       # theft/features.py
+  night_hours: [22, 5]          # 22:00-05:59
+  day_hours: [9, 16]            # solar window
+  rolling_days: 7
+
+models:                         # anomaly.py / supervised.py
+  isolation_forest: {n_estimators: 300, contamination: auto}
+  autoencoder: {hidden: [16, 6, 16], max_iter: 800, alpha: 0.0001}
+  gbm: {max_iter: 300, learning_rate: 0.05, max_leaf_nodes: 15, l2_regularization: 1.0}
+  cv_folds: 5
+
+fusion:                         # fusion.py
+  conformal_alpha: 0.10
+
+graph:                          # graph_theft.py
+  hidden: 32
+  layers: 2
+  epochs: 300
+  lr: 0.01
+  dropout: 0.2
+
+inspection:                     # inspection.py
+  capacity_k: 40                # inspections per campaign (= K in precision@K)
+  crews: 2
+  tariff_inr_per_kwh: 7.0       # assumed average tariff, for value of recovered energy
+  cost_inr_per_km: 25.0         # assumed crew travel cost
+  cost_inr_per_visit: 400.0
+
+hidden_load:                    # hidden_load.py (T9)
+  intensity: [1.0, 3.0, 5.0]     # multipliers on the simulated NTL ratio (up to ~5-15 % of load)
+  power_factor: 0.95
+  seasons: [monsoon, post_monsoon, summer]
+  n2_sample: 120                # sampled N-2 contingencies per season (all N-1 are used)
+
+ht_tapping:                     # ht_tapping.py (T8)
+  n_cases: 300
+  tap_mw: [2.0, 30.0]
+  theft_share: 0.5
+  unmetered_load_uncertainty: 0.10   # SIRA_KBCROSS load is unmetered: ±10 % (assumed)
+  noise_pct: {p: 0.5, q: 1.0, vm: 0.2}
+  false_alarm_rate: 0.01
