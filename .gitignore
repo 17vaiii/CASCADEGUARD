@@ -8,8 +8,15 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
-.venv/
+.venv*/
 venv/
+env/
+ENV/
+.tox/
+.nox/
+pip-wheel-metadata/
+.coverage*
+htmlcov/
 install_log*.txt
 
 # Node / frontend build + test output
