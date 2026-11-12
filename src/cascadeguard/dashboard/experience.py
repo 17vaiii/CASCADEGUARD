@@ -579,7 +579,7 @@ def render_simulation(season: str, intensity: float):
         st.session_state["simulation-threshold"] = saved["threshold"]
     st.markdown("## ⚡ Grid Simulation")
     st.info("Select transmission lines on the map, configure a failure scenario, and run the cascade simulator to see how faults propagate.")
-    theft_aware = st.toggle("🔓 Enable Theft-Aware Mode", value=False, key="grid_theft_aware",
+    theft_aware = st.toggle("🔓 Enable Theft-Aware Mode", key="grid_theft_aware",
                             help="Adds estimated hidden load from theft detection to the grid state")
     state = operating_state(season, theft_aware, intensity)
     feeders = _feeder_summary()

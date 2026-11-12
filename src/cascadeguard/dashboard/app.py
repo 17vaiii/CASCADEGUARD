@@ -205,6 +205,10 @@ def main() -> None:
     st.set_page_config(page_title="CascadeGuard · Grid Intelligence", page_icon="⚡", layout="wide",
                        initial_sidebar_state="expanded")
     _theme()
+    st.session_state.setdefault("grid_theft_aware", False)
+    st.session_state.setdefault("simulation-map-mode", "Grid resilience")
+    st.session_state.setdefault("manager-map-mode", "Grid resilience")
+    st.session_state.setdefault("simulation-initial-trips", [])
     with st.sidebar:
         st.markdown('<div class="cg-kicker">CascadeGuard · local operations</div>', unsafe_allow_html=True)
         st.markdown("## Sharavathi Grid")
