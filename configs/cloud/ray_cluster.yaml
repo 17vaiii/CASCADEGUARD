@@ -4,7 +4,7 @@
 runtime_env:
   working_dir: .
   env_vars:
-    PYTHONPATH: theft_detection:src
+    PYTHONPATH: src
     CASCADEGUARD_STORAGE_MODE: object_store
     CASCADEGUARD_DATA_URI: "s3://<bucket>/cascadeguard/scenarios/"
     MLFLOW_TRACKING_URI: "<team-mlflow-url>"

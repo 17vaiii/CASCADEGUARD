@@ -24,10 +24,6 @@ def get_staged_files(repo_root: Path):
     return [l.strip() for l in lines if l.strip()]
 
 def determine_file_owner(repo_root: Path, rel_path: str) -> str:
-    # Ignore untouched legacy folders
-    if rel_path.startswith("theft_detection/"):
-        return "IGNORED"
-
     # Check header comment in file
     target = repo_root / rel_path
     if target.exists() and target.is_file():

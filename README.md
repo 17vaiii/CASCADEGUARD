@@ -89,7 +89,7 @@ This section records what has been implemented, validated, and integrated into t
 - **R8 retrieval + warm start (`retrieval/`):** precision@3 0.97 (vs 0.68 baseline); precedent warm start about 5× faster than cold optimisation with the same pass rate.
 - **Theft-aware planning (P4 link):** with 12.5 MW of hidden load in monsoon, theft-aware plans held on the true state 22/22; metered-only plans 0/22.
 - **R11 copilot (`copilot/`):** cited, explanation-only incident briefs; Claude `claude-opus-5-5` with refusal fallback when credentials exist, grounded extractive brief offline; citation, number and over-claim checks.
-- **Dashboard (`dashboard/`):** Streamlit + Plotly, Grid Resilience / Loss & Theft / Results tabs, role views, theft-aware toggle. `POST /api/mitigate` now serves verified plans with an audit record.
+- **Dashboard (`dashboard/`):** Streamlit + Plotly with two distinct local workspaces: a map-first Simulation Control Center and a simplified Manager Dashboard. Select configured corridor lines/feeders, run the existing cascade engine and GNN, inject a targeted synthetic feeder theft through the P4 simulator/energy-balance/scoring pipeline, compare baseline and theft-aware runs, and review incidents through the local audit store. The corridor is a configured distance schematic because the project topology does not contain geographic coordinates. `POST /api/mitigate` continues to serve verified plans with an audit record.
 - **Run:** `PYTHONPATH=src python -m cascadeguard.mitigation.experiment` then `PYTHONPATH=src streamlit run src/cascadeguard/dashboard/app.py`. **Status, results, to-dos:** [`docs/p5/p5.md`](docs/p5/p5.md); demo: [`docs/p5/demo.md`](docs/p5/demo.md); report: [`docs/report/sec_p5.md`](docs/report/sec_p5.md).
 
 ---
@@ -276,8 +276,12 @@ cascadeguard-sharavathi/
 
 ## Imported working demo application
 
-The previously developed full-stack demonstration is now stored in `theft_detection/` to match this repository's existing module layout. It includes the corridor simulator, theft ML models and checkpoints, FastAPI backend, React frontend, RAG resources, tests, documentation, and generated datasets. Its local run instructions are in [theft_detection/README.md](theft_detection/README.md).
+The main application and its cascade simulator, theft analytics, FastAPI service, Streamlit dashboard, retrieval resources, tests, and data artifacts are maintained in the root package and `src/cascadeguard/`.
 
-The ten original design notes are preserved under `docs/specifications/`. The root `src/cascadeguard/` package remains the role-based project implementation area; the imported demo is a self-contained application module and has not yet been refactored into that package.
+The ten original design notes are preserved under `docs/specifications/`. The root `src/cascadeguard/` package is the single maintained application implementation.
 
-Dependency folders and machine-specific files (`.venv`, `node_modules`, caches, `.env`, and runtime logs) are intentionally not copied. For the imported demo, install dependencies from `theft_detection/requirements.txt` and `theft_detection/frontend/package-lock.json`. For the PRD P2 platform work, use `make p2-install` from the repository root.
+Install the main application with `make install` from the repository root. Local API, dashboard, data-generation, and test commands are provided by the root Makefile.
+
+### Windows click-to-run launcher
+
+`CascadeGuard.exe` in the project root starts the existing Streamlit dashboard on `127.0.0.1:8501` and opens it in your browser. Keep the executable beside the project folders; it uses the local models and data already in this repository. The first launch creates `.venv` and installs missing project packages if needed. The launcher window also has Open and Stop controls. To rebuild the executable from source, run `powershell -ExecutionPolicy Bypass -File tools/windows/build_exe.ps1`.

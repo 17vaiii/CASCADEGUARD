@@ -1,24 +1,11 @@
-"""P2 interface for labelled cascade data generation using P1's simulator.
-
-The current P1 simulator implementation lives in ``theft_detection/grid``.
-This adapter keeps that engine intact while exposing stable local/cloud output
-and sequential/joblib/Ray execution options to the root package.
-"""
+# OWNER: P2 | NEEDS: P1 | STATUS: ACTIVE
+"""Generate labelled corridor cascade scenarios using the main package simulator."""
 
 from __future__ import annotations
 
 import argparse
-import sys
-from pathlib import Path
 
-
-def _load_pipeline():
-    repository = Path(__file__).resolve().parents[3]
-    simulator_project = repository / "theft_detection"
-    if str(simulator_project) not in sys.path:
-        sys.path.insert(0, str(simulator_project))
-    from simdata.cascade_scenarios import generate_cascade_dataset
-    return generate_cascade_dataset
+from cascadeguard.data.cascade_sim.simdata.cascade_scenarios import generate_cascade_dataset
 
 
 def generate_scenarios(
@@ -31,15 +18,21 @@ def generate_scenarios(
     workers: int = 4,
     ray_address: str | None = None,
 ):
-    """Generate labelled N-k Parquet rows via the integrated P1 simulator."""
+    """Generate labelled N-k Parquet rows with the repository-local simulator."""
     if backend not in {"sequential", "joblib", "ray"}:
         raise ValueError("backend must be sequential, joblib or ray")
     if workers < 1:
         raise ValueError("workers must be positive")
-    run = _load_pipeline()
-    return run(seasons=seasons, k_range=(1, k_max), load_scale_points=load_scales,
-               seed=seed, n_jobs=workers, backend=backend, output_uri=output,
-               ray_address=ray_address)
+    return generate_cascade_dataset(
+        seasons=seasons,
+        k_range=(1, k_max),
+        load_scale_points=load_scales,
+        seed=seed,
+        n_jobs=workers,
+        backend=backend,
+        output_uri=output,
+        ray_address=ray_address,
+    )
 
 
 def main() -> None:
@@ -54,7 +47,7 @@ def main() -> None:
     parser.add_argument("--ray-address", default=None)
     args = parser.parse_args()
     frame = generate_scenarios(args.output, args.seasons, args.k_max, args.load_scales,
-                                args.seed, args.backend, args.workers, args.ray_address)
+                               args.seed, args.backend, args.workers, args.ray_address)
     attempted = int(frame.attrs.get("scenarios_attempted", len(frame)))
     print(f"Simulated {attempted:,} cascade scenarios; wrote {len(frame):,} labelled rows at {args.output}")
 

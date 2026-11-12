@@ -4,7 +4,7 @@
 Unmetered (stolen) demand makes real line loading higher than SCADA shows. This module:
 
 1. turns the T2 energy-balance estimate into a **hidden-load vector** per corridor substation
-   (``theft_detection``-style THEFT_LOAD_VECTOR fields: ``bus_id``, ``hidden_load_mw``,
+   (THEFT_LOAD_VECTOR contract fields: ``bus_id``, ``hidden_load_mw``,
    ``power_factor``, ``confidence``, ``source = suspected_unmetered_load``);
 2. builds three states of the P1 corridor model for the same season:
    * ``scada``  - metered demand only (what operators see),

@@ -14,16 +14,12 @@ install_log*.txt
 
 # Node / frontend build + test output
 node_modules/
-theft_detection/frontend/dist/
-theft_detection/frontend/test-results/
-theft_detection/frontend/playwright-report/
 *.tsbuildinfo
 
 # Sensor-study datasets (~350 MB, regenerate with `make study-data`).
 # Everything else in data/ is committed so the app runs straight after cloning:
 #   data/models/ (trained models + metrics), data/raw/baseline_states.parquet,
 #   data/processed/dataset_major_only.parquet + splits.json (Replay / held-out cases)
-theft_detection/data/processed/study/
 
 # P2 local platform outputs (regenerate through the Makefile targets).
 data/audit/

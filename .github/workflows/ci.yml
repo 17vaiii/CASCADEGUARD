@@ -23,45 +23,13 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: theft_detection/requirements.txt
-
-      - name: Install CPU PyTorch
-        run: python -m pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
-
+          cache-dependency-path: requirements.txt
       - name: Install project dependencies
-        run: python -m pip install -r theft_detection/requirements.txt
-
+        run: python -m pip install -r requirements.txt -r requirements-p5.txt
       - name: Run Python tests
-        run: make --keep-going test-fast test-sim test-future test-rag test-vectordb test-api
-
-  frontend:
-    name: Frontend checks
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: theft_detection/frontend
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: theft_detection/frontend/package-lock.json
-
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Run frontend tests
-        run: npm test
-
-      - name: Build frontend
-        run: npm run build
+        run: PYTHONPATH=src python -m pytest tests -q

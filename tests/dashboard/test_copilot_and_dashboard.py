@@ -92,20 +92,18 @@ def test_llm_refusal_and_ungrounded_fall_back():
     assert out["mode"] == "extractive" and any("grounding" in w for w in out["warnings"])
 
 
-def test_dashboard_renders_for_every_role():
+def test_dashboard_renders_two_separate_workspaces():
     from streamlit.testing.v1 import AppTest
     from cascadeguard.mitigation import REPO_ROOT
     at = AppTest.from_file(str(REPO_ROOT / "src" / "cascadeguard" / "dashboard" / "app.py"), default_timeout=300)
     at.run()
     assert not at.exception
-    assert [t.label for t in at.tabs][:2] == ["Grid Resilience", "Loss & Theft"]
-    at.button[0].click().run()                       # simulate the default contingency
+    assert at.sidebar.radio[0].value == "Simulation Control Center"
+    assert any("Corridor network" in e.value for e in at.markdown if hasattr(e, "value"))
+    at.sidebar.radio[0].set_value("Manager Dashboard").run()
     assert not at.exception
-    labels = [m.label for m in at.metric]
-    assert "Simulator verification" in labels
-    for role in ("Planner", "Loss analyst"):
-        at.sidebar.radio[0].set_value(role).run()
-        assert not at.exception
+    assert any(e.value == "## Manager Dashboard" for e in at.markdown if hasattr(e, "value"))
+    assert any("Sharavathi–Bengaluru network" in e.value for e in at.markdown if hasattr(e, "value"))
 
 
 def test_mitigate_api_route(tmp_path, monkeypatch):

@@ -1,159 +1,51 @@
 # P2 local platform handoff
 
-This handoff covers the **Cloud, Data and Platform P2 role in the attached
-PRD**, specifically P2-3 through P2-9. The separate `theft_detection/` demo
-docs use a remapped team role where Person 2 owns cascade ML. For the current
-PRD P2 work, the platform implementation lives primarily under `src/cascadeguard/`
-and its Make targets; `theft_detection/simdata/cascade_scenarios.py` supplies
-the existing P1 engine adapter. See [agent_context.md](agent_context.md) before
-continuing.
-
-Cloud accounts, object-store provisioning, a Ray cluster, and deployment are
-deferred to a later phase. Current defaults use local files and services. Data
-writers accept URI destinations so the same pipeline can move to S3 or GCS by
-changing the destination and installing the corresponding fsspec driver.
+This handoff covers the PRD Person 2 local data and platform work in the main
+`src/cascadeguard/` package. Cascade simulation and scenario generation are
+available locally through `src/cascadeguard/data/cascade_sim/` and the P2 data
+commands. Cloud accounts, object storage, remote Ray, and deployment remain
+deferred.
 
 ## Start locally
 
-Install the root P2 dependencies with `make p2-install` (or
-`python -m pip install -r requirements.txt`).
-The root modules are run with `PYTHONPATH=src` (or from the Makefile targets).
+Install dependencies with `make p2-install`, then generate datasets:
 
 ```bash
 make p2-meter-data
 make p2-cascade-data
 ```
 
-Start the local services in one terminal, then run the benchmark in another so
-the report and throughput metrics are logged to MLflow:
+The meter and cascade outputs are written under root `data/processed/`. The
+cascade dataset follows [CASCADE_SCENARIOS.md](../../contracts/CASCADE_SCENARIOS.md)
+and [scenario_record.schema.json](../../contracts/scenario_record.schema.json).
+Pre-contingency graph features are model inputs; final-state wide loading and
+voltage columns are diagnostics only.
 
-```bash
-# Terminal 1
-make p2-platform
-# Terminal 2
-make p2-benchmark
-```
-
-The meter file defaults to `data/processed/meter_readings.parquet`. Cascade
-generation writes `data/processed/cascade_dataset.parquet`, keeping this P2
-output separate from the existing checked-in demo artifact under
-`theft_detection/data/processed/`.
-The benchmark writes the sequential and Ray datasets plus
-`data/processed/throughput/throughput_benchmark.json`. If MLflow is reachable,
-the report also includes a run URL and the JSON report is logged as an artifact.
-
-For the later cluster comparison, `make p2-benchmark` cannot forward CLI
-arguments. Invoke the module directly and provide the Ray cluster address. The
-sequential baseline runs on the submitting machine; the Ray workload runs on
-the attached cluster:
-
-```bash
-PYTHONPATH=src python -m cascadeguard.data.benchmark_scenarios \
-  --output-dir data/processed/throughput --k-max 2 --workers 4 \
-  --ray-address auto
-```
-
-For a one-sided cluster data-generation run, call
-`cascadeguard.data.scenario_generator` with `--backend ray --ray-address auto`
-and set `--output` to an object-store URI.
-
-For GCS use `gs://...` and install `gcsfs`; for S3 install `s3fs`. Credentials
-must come from the cloud workload identity or local provider credential chain,
-not checked-in configuration.
-
-## Handoff schemas
-
-The meter record contract is [meter_data.schema.json](../../contracts/meter_data.schema.json).
-It provides synthetic consumer and feeder IDs, interval kWh, an event window,
-the injected class (`meter_bypass`, `meter_stop`, `night_tapping`, `hooking`,
-`temporary_tampering`, or `none`), and `is_suspected_loss`. Unmetered load is
-recorded separately in `feeder_unmetered_kwh`; it is never added to a consumer's
-meter reading. Cascade scenario rows follow
-[CASCADE_SCENARIOS.md](../../theft_detection/contracts/CASCADE_SCENARIOS.md).
-
-Example meter input/configuration:
-
-```json
-{"consumers": 250, "days": 60, "interval_minutes": 60, "theft_fraction": 0.25, "seed": 42}
-```
-
-Representative output row:
-
-```json
-{"timestamp":"2025-01-03T22:00:00Z","consumer_id":"C0000001","feeder_id":"F001","consumer_type":"residential","metered_kwh":0.42,"feeder_unmetered_kwh":0.0,"is_event":true,"is_suspected_loss":true,"theft_type":"meter_bypass","event_start":"2025-01-03T00:00:00Z","event_end":"2025-01-08T23:00:00Z","tamper_event":false,"scenario_seed":42,"split":"train"}
-```
+Start local services with `make p2-platform`. The API is at port 8000, MLflow at
+port 5000, and Qdrant at port 6333. Use `make p2-vector-init` to initialize the
+case and document collections.
 
 ## Throughput and tracking
 
-`make p2-benchmark` uses identical seasons, contingency sizes, load scales and
-seed for a sequential baseline and Ray. The report records attempted and
-written row counts, elapsed seconds, scenarios per hour, speedup, settings,
-execution scope, and MLflow tracking status/link. Until a cloud cluster exists,
-the report is a local single-machine-versus-local-Ray comparison, not the
-PRD's cluster-versus-single-machine result.
+`make p2-benchmark` compares the same workload using sequential generation and
+Ray. Until a remote cluster is available, both runs are local. The report
+records attempted and written rows, elapsed time, scenarios per hour, speedup,
+settings, and MLflow tracking status.
 
-`make p2-platform` starts FastAPI, MLflow and Qdrant. MLflow is at
-`http://localhost:5000`; experiment code should use
-`cascadeguard.common.tracking.tracked_run` and the `cascadeguard-*` experiment
-names. Qdrant is at `http://localhost:6333`. Run `make p2-vector-init` once to
-create `cascade_cases`, `theft_cases` and `documents`. Their default vector
-size is 128; coordinate a dimension change with the embedding producers before
-loading P3/P4/P5 data.
+For an attached cluster, run `cascadeguard.data.benchmark_scenarios` with
+`--ray-address auto`. S3/GCS output requires the matching fsspec driver and
+provider credentials. Do not put credentials in repository configuration.
 
-## API and audit handoff
+## API and audit
 
-`make p2-api` runs the API on port 8000, with OpenAPI at `/docs`. Contracts are
-`/api/predict`, `/api/screen`, `/api/mitigate` and `/api/theft-score`. They
-return an explicit 503 until the dependent P3/P4/P5 implementation is
-registered; the API does not fabricate model answers. Recommendation audit
-records persist locally in `data/audit/recommendations.sqlite3`, with
-recommendation, data references/fingerprint and a later verification result.
-No raw meter payload is placed in the audit store.
+Contracts live in `contracts/openapi.yaml`. The API stores recommendation
+metadata, data references or fingerprints, and verification results in the
+local audit database; it does not store raw meter payloads.
 
-Example audit request:
+## Verification boundaries
 
-```json
-{"recommendation":{"action":"inspect feeder F001"},"data_refs":["scenario-123"],"data_fingerprint":"sha256:..."}
-```
-
-The generated `audit_id` is used to submit a verification result through
-`POST /api/audit/recommendations/{audit_id}/verification`.
-
-## Verification status (2026-11-01)
-
-The root requirements installed into `.venv` and `pip check` passed. All 160
-Python tests and all 21 frontend tests passed; the frontend production build
-passed. The P2 API in-process HTTP smoke returned 200 for health/OpenAPI, exercised audit
-create/verify/read, and confirmed the four model routes return expected 503
-dependency-not-ready responses pending P3/P4/P5. Meter Parquet generation
-passed for all five labels and split isolation. Sequential and Ray cascade
-generation passed with 76 rows each. A same-machine benchmark logged to local
-SQLite MLflow: 9,345 sequential vs. 12,762 local-Ray scenarios/hour (1.366x)
-for a small summer N-1 smoke workload. This is not a cloud-cluster comparison.
-
-Ray initially uploaded 415 MiB from local dependencies and datasets;
-`theft_detection/.rayignore` now reduces the worker package to 0.51 MiB and the
-Ray smoke still passes. `git diff --check` passed.
-
-**Docker/Qdrant verification (2026-11-01):** all three Compose containers
-built and started on Ubuntu. API `/health` and `/openapi.json`, MLflow
-`/health`, and Qdrant `/collections` returned 200. Audit create/verify/read
-passed over HTTP; model routes returned expected dependency-not-ready 503s.
-With the root requirements pin of `qdrant-client==1.12.1`,
-`make p2-vector-init` completed without a version warning and the three
-collections were present. Cloud storage and remote Ray remain untested until
-the later infrastructure phase.
-
-## Current boundaries
-
-- Ray code supports local and attached runtimes; no cloud cluster was created.
-- Local Ray generation was exercised. Attached/remote Ray and cloud scaling were
-  not exercised.
-- S3/GCS writers are configured through fsspec but were not exercised without
-  cloud credentials and the deferred infrastructure.
-- API Docker packaging and local compose services are provided. Cloud Run/ECS
-  deployment remains deferred, as requested.
-- Cascade prediction/screening, mitigation and theft-score routes remain
-  dependency-gated until P3/P4/P5 publish their implementations.
-- P2-10 Kafka/Pub/Sub telemetry is still a stretch item and is not part of this
-  core local phase. Existing demo WebSocket replay is separate.
+- Local sequential and Ray generation are supported; remote cluster execution
+  and cloud object storage are not verified here.
+- Cloud Run/ECS deployment and Kafka/Pub/Sub telemetry remain deferred.
+- Model endpoints may return dependency-not-ready responses until their model
+  components are registered.

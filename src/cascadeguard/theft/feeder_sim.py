@@ -200,8 +200,13 @@ def _solar_shape(hour: np.ndarray) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def simulate_distribution(config: dict[str, Any] | None = None, seed: int | None = None,
-                          scale: float = 1.0) -> DistributionDataset:
-    """Simulate the distribution layer. ``scale`` multiplies the feeder count (for quick tests)."""
+                          scale: float = 1.0, injection: dict[str, Any] | None = None) -> DistributionDataset:
+    """Simulate the distribution layer.
+
+    ``scale`` multiplies the feeder count (for quick tests). ``injection`` optionally pins a
+    synthetic demonstration theft to one generated feeder and controls its type, duration,
+    intensity and number of affected consumers. The default research pipeline is unchanged.
+    """
     cfg = config or load_config()
     sim = cfg["simulation"]
     seed = int(cfg.get("seed", 42) if seed is None else seed)
@@ -229,8 +234,11 @@ def simulate_distribution(config: dict[str, Any] | None = None, seed: int | None
     for sub, n_feed in sim["feeders_per_substation"].items():
         n_feed = max(1, int(round(n_feed * scale)))
         area = sim["area_by_substation"][sub]
-        for f in range(n_feed):
-            fid = f"{sub}_F{f:02d}"
+        if injection and sub == injection.get("substation"):
+            feeder_ids = [str(injection["feeder_id"])]
+        else:
+            feeder_ids = [f"{sub}_F{f:02d}" for f in range(n_feed)]
+        for fid in feeder_ids:
             angle = rng.uniform(0, 2 * np.pi)
             n_dt = int(rng.integers(sim["dts_per_feeder"][0], sim["dts_per_feeder"][1] + 1))
             seg = rng.uniform(*elec["segment_km"], size=n_dt)
@@ -291,7 +299,15 @@ def simulate_distribution(config: dict[str, Any] | None = None, seed: int | None
     on_hot = consumers.feeder_id.isin(hotspots).to_numpy()
     share = float(sim.get("hotspot_theft_share", on_hot.mean()))
     weights = np.where(on_hot, share / max(on_hot.sum(), 1), (1 - share) / max((~on_hot).sum(), 1))
-    theft_rows = rng.choice(n_c, size=n_theft, replace=False, p=weights / weights.sum())
+    if injection:
+        feeder_id = str(injection["feeder_id"])
+        eligible = consumers.index[consumers.feeder_id == feeder_id].to_numpy()
+        if not len(eligible):
+            raise ValueError(f"Unknown feeder for theft injection: {feeder_id}")
+        n_theft = min(max(1, int(injection.get("affected_consumers", 1))), len(eligible))
+        theft_rows = rng.choice(eligible, size=n_theft, replace=False)
+    else:
+        theft_rows = rng.choice(n_c, size=n_theft, replace=False, p=weights / weights.sum())
     rest = np.setdiff1d(np.arange(n_c), theft_rows)
     look_rows = rng.choice(rest, size=min(n_look, len(rest)), replace=False)
 
@@ -319,22 +335,33 @@ def simulate_distribution(config: dict[str, Any] | None = None, seed: int | None
     night_lo, night_hi = cfg["features"]["night_hours"]
     night = (hour >= night_lo) | (hour < night_hi + 1)
     for k, r in enumerate(theft_rows):
-        kind = THEFT_TYPES[k % len(THEFT_TYPES)]
-        start = int(rng.integers(history_end, periods - min_ev))
-        end = int(rng.integers(start + min_ev, periods + 1))
+        kind = str(injection["theft_type"]) if injection else THEFT_TYPES[k % len(THEFT_TYPES)]
+        if kind not in THEFT_TYPES:
+            raise ValueError(f"Unsupported theft type: {kind}")
+        if injection:
+            start = max(history_end, int(injection.get("start_idx", history_end)))
+            duration = max(min_ev, int(round(float(injection.get("duration_days", sim["min_event_days"])) * per_day)))
+            end = min(periods, start + duration)
+            if end - start < min_ev:
+                raise ValueError("The injection must leave at least the configured minimum event duration")
+        else:
+            start = int(rng.integers(history_end, periods - min_ev))
+            end = int(rng.integers(start + min_ev, periods + 1))
         consumers.loc[r, ["theft_type", "event_start", "event_end"]] = [kind, start, end]
         sl = slice(start, end)
         kw = consumers.at[r, "typical_kw"]
+        intensity = float(injection.get("intensity", 1.0)) if injection else 1.0
         if kind == "meter_bypass":
-            metered[r, sl] = legit[r, sl] * rng.uniform(0.25, 0.65)
+            retained = rng.uniform(0.25, 0.65)
+            metered[r, sl] = legit[r, sl] * np.clip(1.0 - (1.0 - retained) * intensity, 0.05, 0.95)
         elif kind == "meter_stop":
             metered[r, sl] = 0.0
         elif kind == "night_tapping":
-            extra = kw * rng.uniform(0.8, 2.5) * interval_h
+            extra = kw * rng.uniform(0.8, 2.5) * interval_h * intensity
             mask = night[sl]
             true[r, sl] = legit[r, sl] + np.where(mask, extra, 0.0)
         elif kind == "hooking":
-            extra = kw * rng.uniform(0.6, 2.0) * interval_h * rng.lognormal(0, 0.15, end - start)
+            extra = kw * rng.uniform(0.6, 2.0) * interval_h * intensity * rng.lognormal(0, 0.15, end - start)
             true[r, sl] = legit[r, sl] + extra
         else:  # temporary_tampering: tamper on ~half the days, intermittently
             days = np.unique(day_idx[sl])

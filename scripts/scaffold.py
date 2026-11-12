@@ -2,7 +2,6 @@
 # OWNER: P1 | STATUS: ACTIVE
 """Scaffold generator for CascadeGuard-Sharavathi repository.
 Generates all directory structures and placeholder files with ownership headers.
-Strictly ignores and preserves 'theft_detection/'.
 """
 
 import os
