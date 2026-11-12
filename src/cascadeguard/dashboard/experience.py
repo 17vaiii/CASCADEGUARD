@@ -499,19 +499,21 @@ def _theft_injection_panel(advanced: bool = True):
         cols = st.columns(2)
         stations = list(SUBSTATIONS)
         preferred_sub = st.session_state.get("selected_substation")
-        current_sub = st.session_state.get("demo-substation", preferred_sub if preferred_sub in stations else "NELAMANGALA")
-        sub = cols[0].selectbox("Corridor substation", stations, index=stations.index(current_sub), key="demo-substation")
+        if preferred_sub in stations:
+            st.session_state["demo-substation"] = preferred_sub
+        elif "demo-substation" not in st.session_state:
+            st.session_state["demo-substation"] = "NELAMANGALA"
+        sub = cols[0].selectbox("Corridor substation", stations, key="demo-substation")
         summary = _feeder_summary()
         feeder_choices = summary.loc[summary.node_id.astype(str).str.startswith(sub + "_"), "node_id"].astype(str).tolist() if summary is not None else []
         if not feeder_choices:
             feeder_choices = [f"{sub}_F00"]
         selected_feed = st.session_state.get("selected_feeder")
-        current_feed = st.session_state.get("demo-feeder")
         if selected_feed and selected_feed.startswith(sub + "_"):
-            current_feed = selected_feed
-        if current_feed not in feeder_choices:
-            current_feed = feeder_choices[0]
-        feeder_id = cols[1].selectbox("Feeder", feeder_choices, index=feeder_choices.index(current_feed), key="demo-feeder")
+            st.session_state["demo-feeder"] = selected_feed
+        elif st.session_state.get("demo-feeder") not in feeder_choices:
+            st.session_state["demo-feeder"] = feeder_choices[0]
+        feeder_id = cols[1].selectbox("Feeder", feeder_choices, key="demo-feeder")
         theft_type = THEFT_TYPES[st.selectbox("Theft pattern", list(THEFT_TYPES), key="demo-theft-type")]
         if advanced:
             c = st.columns(4)
@@ -617,10 +619,14 @@ def render_simulation(season: str, intensity: float):
             table = pd.DataFrame(sequence)
             st.dataframe(table, hide_index=True, width="stretch")
             max_step = len(sequence) - 1
-            slider_step = int(st.session_state.get("timeline-step-slider", st.session_state.get("timeline_event", 0)))
-            st.session_state["timeline-step-slider"] = min(max(slider_step, 0), max_step)
-            idx = st.slider("Highlight event step", 0, max_step, key="timeline-step-slider")
-            st.session_state["timeline_event"] = idx
+            if max_step > 0:
+                slider_step = int(st.session_state.get("timeline-step-slider", st.session_state.get("timeline_event", 0)))
+                st.session_state["timeline-step-slider"] = min(max(slider_step, 0), max_step)
+                idx = st.slider("Highlight event step", 0, max_step, key="timeline-step-slider")
+                st.session_state["timeline_event"] = idx
+            else:
+                idx = 0
+                st.session_state["timeline_event"] = 0
             step = sequence[idx]
             st.session_state["selected_line"] = int(step["line_idx"])
             st.info(f"Step {step['iteration']} · line {step['line_idx']} {step['name']} · {step['reason']} · loading {step.get('loading_pct') or 'not applicable'}")
