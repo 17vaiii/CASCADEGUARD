@@ -53,18 +53,21 @@ def corridor_figure(net, title: str, tripped: list[int] | None = None) -> go.Fig
             if line in tripped or load is None:
                 color, dash, label = "#c0392b", "dot", "out of service"
             else:
-                color = "#2e7d32" if load < 70 else ("#f39c12" if load < 95 else "#c0392b")
+                color = "#22c55e" if load < 70 else ("#f39c12" if load < 95 else "#c0392b")
                 dash, label = "solid", f"{load:.0f}%"
             fig.add_trace(go.Scatter(x=[r.km_from, r.km_to], y=[offset, offset], mode="lines",
                                      line=dict(color=color, width=6, dash=dash), showlegend=False,
                                      hovertemplate=f"Section {r.section} ({r['name']}) circuit "
                                                    f"{'A' if offset > 0 else 'B'}<br>line {line}: {label}<extra></extra>"))
     fig.add_trace(go.Scatter(x=list(SUBSTATIONS.values()), y=[0] * 5, mode="markers", text=list(SUBSTATIONS),
-                             marker=dict(size=14, color="#1f3b73", symbol="square"), showlegend=False, hoverinfo="text"))
+                             marker=dict(size=14, color="#6366f1", symbol="square", line=dict(color="#f8fafc", width=1)), showlegend=False, hoverinfo="text"))
     fig.add_trace(go.Scatter(x=list(SUBSTATIONS.values()), y=[0.42] * 5, mode="text", text=list(SUBSTATIONS),
-                             showlegend=False, hoverinfo="skip", textfont=dict(size=11, color="#1f3b73")))
-    fig.update_layout(title=title, height=230, margin=dict(l=10, r=10, t=40, b=30), yaxis=dict(visible=False, range=[-0.6, 0.8]),
-                      xaxis=dict(title="km from Sharavathi"), plot_bgcolor="white")
+                             showlegend=False, hoverinfo="skip", textfont=dict(size=11, color="#e2e8f0")))
+    fig.update_layout(title=dict(text=title, font=dict(color="#f1f5f9")), height=230, margin=dict(l=10, r=10, t=40, b=30),
+                      yaxis=dict(visible=False, range=[-0.6, 0.8]),
+                      xaxis=dict(title="km from Sharavathi", gridcolor="#1e293b", color="#94a3b8"),
+                      plot_bgcolor="#0b1220", paper_bgcolor="#0b1220",
+                      font=dict(color="#cbd5e1", family="'Plus Jakarta Sans', 'Segoe UI', sans-serif"))
     return fig
 
 
@@ -78,16 +81,12 @@ def _metric_row(before: dict[str, Any], after: dict[str, Any]) -> None:
 
 
 def render(role: str, season: str, theft_aware: bool, intensity: float) -> None:
-    st.subheader("Grid Resilience - Sharavathi to Bengaluru corridor")
+    st.subheader("🛡️ Grid Resilience")
     state = get_state(season, theft_aware, intensity)
-    st.caption(f"Season **{season}** · hydro {state.hydro.base_mw:.0f} MW (max {state.hydro.max_mw:.0f} MW within "
-               f"ramp/reservoir limits) · state-grid import {state.tie_mw:.0f} MW at NELAMANGALA · "
-               + (f"**theft-aware**: {state.hidden_mw:.1f} MW suspected hidden load added" if state.hidden_mw else
-                  "metered (SCADA) view"))
+    st.info(f"Season: {season.replace('_',' ').title()} · Hydro: {state.hydro.base_mw:.0f} MW · Grid import: {state.tie_mw:.0f} MW" + (" · Theft-aware mode" if state.hidden_mw else ""))
     st.plotly_chart(corridor_figure(state.net, "Pre-contingency line loading (both circuits per section)"),
                     width="stretch")
-    st.caption("Line colours: green below 70 % · amber 70-95 % · red 95 % and above · red dotted = out of service. "
-               "Hover a line for its loading.")
+    st.markdown('<span style="color:#2e7d32">●</span> Normal (<70%) &nbsp; <span style="color:#f39c12">●</span> Warning (70–95%) &nbsp; <span style="color:#c0392b">●</span> Critical (≥95%) &nbsp; <span style="color:#c0392b">◌</span> Tripped', unsafe_allow_html=True)
 
     with st.form("contingency"):
         c = st.columns([2, 2, 1, 1])
@@ -118,8 +117,7 @@ def render(role: str, season: str, theft_aware: bool, intensity: float) -> None:
         post, _ = post_contingency(state, Event(case["event"]["lines"], case["event"]["tie_loss"]))
         st.plotly_chart(corridor_figure(post, "Immediately after the event (before relays act)", case["event"]["lines"]),
                         width="stretch")
-        st.markdown(f"**Recommendation** - stage `{res['stage']}`, {'verified' if rec['verified'] else 'NOT verified'} "
-                    "by AC re-simulation:")
+        st.markdown(f"**Recommended Actions** {'✅ Verified' if rec['verified'] else '⚠️ Unverified'}:")
         for line in case["actions_text"]:
             st.markdown(f"- {line}")
         apply = st.toggle("Apply plan (simulated)", value=True)
@@ -129,25 +127,25 @@ def render(role: str, season: str, theft_aware: bool, intensity: float) -> None:
             st.plotly_chart(corridor_figure(after_net, "After applying the plan", case["event"]["lines"]),
                             width="stretch")
     with right:
-        st.markdown("**Prediction**")
-        st.write(f"P1 simulator, no action: {'cascade' if before['cascade'] else 'no further trips'}, "
+        st.markdown("**🎯 Risk Assessment**")
+        st.write(f"Cascade simulator, no action: {'cascade' if before['cascade'] else 'no further trips'}, "
                  f"{before['total_lost_mw']:.0f} MW lost"
                  + (f" (incl. {before['ufls_mw']:.0f} MW automatic UFLS)" if before["ufls_mw"] else ""))
         if case["gnn"]:
-            st.write(f"Cascade GNN: cascade probability {case['gnn']['has_cascade_prob']:.2f}, "
+            st.write(f"ML risk model: cascade probability {case['gnn']['has_cascade_prob']:.2f}, "
                      f"load loss {case['gnn']['load_lost_mw']:.0f} MW")
-            st.caption(f"GNN checkpoint: {case['gnn'].get('checkpoint')}. A fast estimate; the simulator result is authoritative.")
+            st.caption("ML model estimate. The simulator result is authoritative.")
             top = case["gnn"].get("top_line_failure_probs") or []
             if top:
                 names = state.net.line.name
                 st.dataframe(pd.DataFrame([{"line": str(names.loc[x["line"]]),
                                             "GNN failure probability": round(x["prob"], 3)} for x in top]),
                              hide_index=True, width="stretch")
-        st.markdown("**Critical lines right after the event** (AC power flow)")
+        st.markdown("**⚡ Critical lines after the event**")
         if before.get("critical_lines"):
             st.dataframe(pd.DataFrame([{"line": c["name"], "loading %": round(c["loading_pct"], 1)}
                                        for c in before["critical_lines"]]), hide_index=True, width="stretch")
-        st.markdown("**Cascade path, no action** (P1 simulator)")
+        st.markdown("**🔗 Cascade path**")
         seq = before.get("trip_sequence") or []
         if seq:
             st.dataframe(pd.DataFrame([{"step": s["iteration"], "line": s["name"], "cause": s["reason"],
@@ -155,7 +153,7 @@ def render(role: str, season: str, theft_aware: bool, intensity: float) -> None:
                                        for s in seq]), hide_index=True, width="stretch")
         else:
             st.caption("No line trips (generation-deficit event).")
-        st.markdown("**Similar past cases** (case-based retrieval)")
+        st.markdown("**📚 Similar Historical Cases**")
         if case["similar"]:
             st.dataframe(pd.DataFrame([{"case": s["case_id"], "similarity": round(s["similarity"], 3),
                                         "action type": s["signature"], "loss before %": round(s["before_lost_pct"], 1),
@@ -164,7 +162,7 @@ def render(role: str, season: str, theft_aware: bool, intensity: float) -> None:
         else:
             st.caption("No case library yet - run `python -m cascadeguard.mitigation.experiment`.")
         if role != "Loss analyst":
-            with st.expander("Incident brief (copilot, cited, explanation only)", expanded=role == "Operator"):
+            with st.expander("📝 AI Incident Brief", expanded=role == "Operator"):
                 from cascadeguard.copilot.brief import build_facts, generate_brief
                 facts = build_facts(case["event"], season, before, rec, res["stage"], case["actions_text"],
                                     case["hydro"], case["similar"],
@@ -178,7 +176,7 @@ def render(role: str, season: str, theft_aware: bool, intensity: float) -> None:
                         st.caption(f"[{cit['n']}] {cit['title']} - {cit['section']} ({cit['status']})")
 
     if role == "Planner":
-        st.markdown("#### Planning view - contingency study results")
+        st.markdown("#### 📋 Contingency Study Results")
         df = data.read_parquet(data.MITIGATION_DIR / "mitigation_results.parquet")
         if df is None:
             st.caption("Run the mitigation experiment to populate the study table.")

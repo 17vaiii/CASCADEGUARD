@@ -1,5 +1,5 @@
 # CascadeGuard main-package workflows. Python 3.12 is recommended.
-PYTHON ?= python
+PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python)
 PYTEST := $(PYTHON) -m pytest
 PIP := $(PYTHON) -m pip
 

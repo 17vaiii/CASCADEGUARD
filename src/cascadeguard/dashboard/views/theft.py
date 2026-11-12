@@ -37,14 +37,20 @@ def render(role: str) -> None:
             h = heat.set_index("node_id")
             h.columns = [f"wk {int(c) + 1}" for c in h.columns]
             fig = px.imshow(h, aspect="auto", color_continuous_scale="OrRd", origin="upper",
-                            labels=dict(color="residual %"), title="Unexplained loss by feeder and week (% of input)")
-            fig.update_layout(height=520, margin=dict(l=10, r=10, t=40, b=10))
+                            labels=dict(color="residual %"), title="Unexplained loss by feeder and week (% of input)",
+                            template="plotly_dark")
+            fig.update_layout(height=520, margin=dict(l=10, r=10, t=40, b=10), paper_bgcolor="#0b1220",
+                              plot_bgcolor="#0b1220", font=dict(color="#cbd5e1", family="'Plus Jakarta Sans', 'Segoe UI', sans-serif"),
+                              title=dict(font=dict(color="#f1f5f9")))
             st.plotly_chart(fig, width="stretch")
     with right:
         fig = go.Figure(go.Pie(labels=["Metered consumption", "Technical loss (est.)", "Suspected NTL (est. residual)"],
                                values=[split["metered_mwh"], split["technical_loss_pct_est"] * split["input_mwh"] / 100,
-                                       split["ntl_pct_est"] * split["input_mwh"] / 100], hole=0.5))
-        fig.update_layout(title="Where feeder energy went (scoring window)", height=300, margin=dict(l=10, r=10, t=40, b=10))
+                                       split["ntl_pct_est"] * split["input_mwh"] / 100], hole=0.5,
+                               marker=dict(colors=["#3b82f6", "#10b981", "#ef4444"])))
+        fig.update_layout(title=dict(text="Where feeder energy went (scoring window)", font=dict(color="#f1f5f9")),
+                          height=300, margin=dict(l=10, r=10, t=40, b=10), paper_bgcolor="#0b1220",
+                          plot_bgcolor="#0b1220", font=dict(color="#cbd5e1", family="'Plus Jakarta Sans', 'Segoe UI', sans-serif"))
         st.plotly_chart(fig, width="stretch")
         ratio = data.read_parquet(data.THEFT_DIR / "ntl_ratio_by_substation.parquet")
         if ratio is not None:
@@ -72,8 +78,11 @@ def render(role: str) -> None:
     strat = data.read_parquet(data.THEFT_DIR / "inspection_strategies.parquet")
     if strat is not None and role in ("Loss analyst", "Planner"):
         fig = px.bar(strat, x="strategy", y="recovered_kwh", text="hits",
-                     title=f"Energy recovered by {int(strat.visits.max())} inspections (simulated truth; label = hits)")
-        fig.update_layout(height=320, margin=dict(l=10, r=10, t=40, b=10))
+                     title=f"Energy recovered by {int(strat.visits.max())} inspections (simulated truth; label = hits)",
+                     template="plotly_dark")
+        fig.update_layout(height=320, margin=dict(l=10, r=10, t=40, b=10), paper_bgcolor="#0b1220",
+                          plot_bgcolor="#0b1220", font=dict(color="#cbd5e1", family="'Plus Jakarta Sans', 'Segoe UI', sans-serif"),
+                          title=dict(font=dict(color="#f1f5f9")))
         st.plotly_chart(fig, width="stretch")
     if role == "Loss analyst":
         fair = metrics.get("fairness", {}).get("operating_points", {}).get("threshold", {})

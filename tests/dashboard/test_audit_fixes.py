@@ -143,7 +143,8 @@ def test_dashboard_shows_path_and_clean_label():
     from streamlit.testing.v1 import AppTest
     at = AppTest.from_file(str(REPO_ROOT / "src" / "cascadeguard" / "dashboard" / "app.py"), default_timeout=300)
     at.run()
-    at.button[0].click().run()
+    sim_btn = [b for b in at.button if b.label == "Simulate"][0]
+    sim_btn.click().run()
     assert not at.exception
     text = " ".join(m.value for m in at.markdown)
     assert "Cascade path" in text and "Critical lines" in text

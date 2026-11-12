@@ -13,6 +13,14 @@ from cascadeguard.dashboard import data
 from cascadeguard.mitigation.network import Event, build_state
 
 SUBSTATIONS = {"SHARAVATHI": 0, "SHIMOGA": 110, "SIRA_KBCROSS": 215, "NELAMANGALA": 320, "PEENYA": 361}
+# Town/site coordinates used to place the configured corridor on a geographic basemap.
+CORRIDOR_COORDS = {
+    "SHARAVATHI": (14.1704, 74.8388),
+    "SHIMOGA": (13.9299, 75.5681),
+    "SIRA_KBCROSS": (13.7412, 76.9049),
+    "NELAMANGALA": (13.0983, 77.3939),
+    "PEENYA": (13.0213, 77.5283),
+}
 THEFT_TYPES = {
     "Meter bypass": "meter_bypass", "Meter stop": "meter_stop", "Night-time tapping": "night_tapping",
     "Direct hooking": "hooking", "Temporary tampering": "temporary_tampering",
@@ -27,6 +35,18 @@ def operating_state(season: str, theft_aware: bool = False, intensity: float = 1
 
 def _line_name(net, idx: int) -> str:
     return str(net.line.at[int(idx), "name"])
+
+
+def _corridor_coords(km: float) -> tuple[float, float]:
+    anchors = list(SUBSTATIONS.items())
+    for (left_name, left_km), (right_name, right_km) in zip(anchors, anchors[1:]):
+        if km <= right_km:
+            fraction = (km - left_km) / (right_km - left_km)
+            left = CORRIDOR_COORDS[left_name]
+            right = CORRIDOR_COORDS[right_name]
+            return (left[0] + fraction * (right[0] - left[0]),
+                    left[1] + fraction * (right[1] - left[1]))
+    return CORRIDOR_COORDS[anchors[-1][0]]
 
 
 def network_map(net, *, mode: str, tripped: list[int] | None = None, selected_line: int | None = None,
@@ -55,16 +75,18 @@ def network_map(net, *, mode: str, tripped: list[int] | None = None, selected_li
             if mode == "Loss & Theft":
                 color = "#334155"
             width = 4.5 if line_id == selected_line else 2.4
-            fig.add_trace(go.Scatter(
-                x=[row.km_from, row.km_to], y=[y, y], mode="lines",
-                line={"color": color, "width": width, "dash": "dash" if is_failed else "solid"},
+            start_lat, start_lon = _corridor_coords(float(row.km_from))
+            end_lat, end_lon = _corridor_coords(float(row.km_to))
+            fig.add_trace(go.Scattermap(
+                lat=[start_lat, end_lat], lon=[start_lon, end_lon], mode="lines",
+                line={"color": color, "width": width},
                 name=f"{line_id} · {circuit}", showlegend=False,
                 customdata=[[line_id, "line"], [line_id, "line"]],
                 hovertemplate=f"{row.name} · circuit {circuit}<br>line {line_id}<br>Loading: {actual_load if actual_load is not None else 'unavailable'}%<extra>Click line marker below to select</extra>"))
-            fig.add_trace(go.Scatter(
-                x=[(row.km_from + row.km_to) / 2], y=[y], mode="markers",
-                marker={"size": 13 if line_id == selected_line else 9, "color": color,
-                        "opacity": .82, "line": {"color": "#e2e8f0", "width": 1}},
+            marker_lat, marker_lon = _corridor_coords(float(row.km_from + row.km_to) / 2)
+            fig.add_trace(go.Scattermap(
+                lat=[marker_lat], lon=[marker_lon], mode="markers",
+                marker={"size": 13 if line_id == selected_line else 9, "color": color, "opacity": .82},
                 customdata=[[line_id, "line"]], name=f"Line {line_id}", showlegend=False,
                 hovertemplate=f"Select {row.name} circuit {circuit}<br>Line ID {line_id}<br>Loading: {actual_load if actual_load is not None else 'unavailable'}%<extra></extra>"))
 
@@ -73,55 +95,86 @@ def network_map(net, *, mode: str, tripped: list[int] | None = None, selected_li
     if bus_km:
         bx, by, bc, bd = [], [], [], []
         for bus, km in bus_km.items():
-            bx.append(float(km)); by.append(.34)
+            lat, lon = _corridor_coords(float(km))
+            bx.append(lat); by.append(lon)
             bc.append("#fb7185" if int(bus) in affected else "#64748b")
             bd.append([int(bus), "bus"])
-    fig.add_trace(go.Scatter(x=bx, y=[1.04] * len(bx), mode="markers", marker={"size": [10 if b in affected else 5 for b in [x[0] for x in bd]],
-            "color": bc, "line": {"color": "#0b1220", "width": 1}}, customdata=bd, name="Buses",
-            hovertemplate="Bus %{customdata[0]}<br>%{x} km from Sharavathi<extra></extra>"))
+    fig.add_trace(go.Scattermap(lat=bx, lon=by, mode="markers", marker={"size": [10 if b in affected else 5 for b in [x[0] for x in bd]],
+            "color": bc}, customdata=bd, name="Buses",
+            hovertemplate="Bus %{customdata[0]}<extra></extra>"))
 
     station_names = list(SUBSTATIONS)
-    fig.add_trace(go.Scatter(x=list(SUBSTATIONS.values()), y=[1.34] * len(station_names), mode="markers+text",
+    fig.add_trace(go.Scattermap(lat=[CORRIDOR_COORDS[name][0] for name in station_names],
+        lon=[CORRIDOR_COORDS[name][1] for name in station_names], mode="markers+text",
         text=station_names, textposition="top center", textfont={"size": 11, "color": "#e2e8f0"},
-        marker={"size": 15, "color": "#a78bfa", "symbol": "square", "line": {"color": "#f8fafc", "width": 1}},
+        marker={"size": 15, "color": "#a78bfa", "symbol": "square"},
         customdata=[[name, "substation"] for name in station_names], name="Corridor substations",
         hovertemplate="%{text}<br>%{x} km from Sharavathi<extra></extra>"))
 
     if feeder_rows is not None and not feeder_rows.empty and mode in ("Loss & Theft", "Combined"):
+        import math
         visible = feeder_rows.copy()
         if selected_feeder:
             visible = visible[visible.node_id.astype(str) == selected_feeder]
         xs, ys, texts, ids, sizes, colors = [], [], [], [], [], []
-        sub_to_km = {name: km for name, km in SUBSTATIONS.items()}
-        for i, row in enumerate(visible.itertuples(index=False)):
+        line_lats, line_lons = [], []
+
+        # Group visible feeders by parent substation to distribute them radially
+        sub_feeders: dict[str, list] = {}
+        for row in visible.itertuples(index=False):
             feeder = str(row.node_id)
             sub = next((s for s in station_names if feeder.startswith(s)), None)
-            if sub is None:
-                continue
-            xs.append(sub_to_km[sub]); ys.append(1.49 + .04 * (i % 4)); texts.append(feeder); ids.append(feeder)
-            score = float(getattr(row, "z", 0) or 0)
-            sizes.append(10 + min(12, max(0, score)))
-            colors.append("#fb7185" if bool(getattr(row, "flagged", False)) else "#f59e0b")
+            if sub is not None:
+                sub_feeders.setdefault(sub, []).append(row)
+
+        for sub, f_rows in sub_feeders.items():
+            base_lat, base_lon = CORRIDOR_COORDS[sub]
+            n_sub = len(f_rows)
+            for k, row in enumerate(f_rows):
+                feeder = str(row.node_id)
+                # Radial dispersion around substation: 2 concentric tiers if >10 feeders
+                angle = (2 * math.pi * k) / n_sub - math.pi / 2
+                radius = 0.048 if n_sub <= 8 else (0.042 if (k % 2 == 0) else 0.075)
+                f_lat = base_lat + radius * math.sin(angle)
+                f_lon = base_lon + (radius / max(0.2, math.cos(math.radians(base_lat)))) * math.cos(angle)
+
+                # Dotted/thin connector from substation to distribution feeder node
+                line_lats.extend([base_lat, f_lat, None])
+                line_lons.extend([base_lon, f_lon, None])
+
+                xs.append(f_lat); ys.append(f_lon); texts.append(feeder); ids.append(feeder)
+                score = float(getattr(row, "z", 0) or 0)
+                sizes.append(10 + min(12, max(0, score)))
+                colors.append("#fb7185" if bool(getattr(row, "flagged", False)) else "#f59e0b")
+
+        if line_lats:
+            fig.add_trace(go.Scattermap(lat=line_lats, lon=line_lons, mode="lines",
+                line={"color": "rgba(148, 163, 184, 0.35)", "width": 1.2},
+                name="Feeder distribution ties", showlegend=False, hoverinfo="skip"))
+
         if xs:
-            fig.add_trace(go.Scatter(x=xs, y=ys, mode="markers+text", text=texts, textposition="top center",
+            fig.add_trace(go.Scattermap(lat=xs, lon=ys, mode="markers+text", text=texts, textposition="top center",
                 textfont={"size": 9, "color": "#cbd5e1"}, marker={"size": sizes, "color": colors, "opacity": .9},
                 customdata=[[fid, "feeder"] for fid in ids], name="Feeder leads",
-                hovertemplate="%{text}<br>Existing feeder-level loss lead<extra></extra>"))
+                hovertemplate="<b>%{text}</b><br>Loss anomaly lead<br>Click to inspect details<extra></extra>"))
 
     if demo_feeder:
         sub = next((s for s in station_names if demo_feeder.startswith(s + "_")), None)
         if sub:
-            fig.add_trace(go.Scatter(x=[SUBSTATIONS[sub]], y=[1.72], mode="markers+text", text=["SYNTHETIC · " + demo_feeder],
+            demo_lat = CORRIDOR_COORDS[sub][0] + 0.085
+            demo_lon = CORRIDOR_COORDS[sub][1]
+            fig.add_trace(go.Scattermap(lat=[demo_lat], lon=[demo_lon], mode="markers+text",
+                text=["SYNTHETIC · " + demo_feeder],
                 textposition="top center", textfont={"size": 10, "color": "#c4b5fd"},
-                marker={"size": 16, "color": "#8b5cf6", "symbol": "diamond", "line": {"color": "#f8fafc", "width": 1}},
+                marker={"size": 16, "color": "#8b5cf6", "symbol": "diamond"},
                 customdata=[[demo_feeder, "feeder"]], name="Synthetic demonstration",
                 hovertemplate="Synthetic injected scenario<br>%{text}<extra></extra>"))
 
-    fig.update_layout(height=400, margin={"l": 18, "r": 18, "t": 24, "b": 24},
-        paper_bgcolor="#0b1220", plot_bgcolor="#0b1220", font={"color": "#cbd5e1", "family": "Inter, Segoe UI, sans-serif"},
+    fig.update_layout(height=500, margin={"l": 18, "r": 18, "t": 24, "b": 24},
+        paper_bgcolor="#0b1220", plot_bgcolor="#0b1220",
+        font={"color": "#cbd5e1", "family": "'Plus Jakarta Sans', 'Segoe UI', sans-serif"},
         hoverlabel={"bgcolor": "#111c2e", "font": {"color": "#f8fafc"}},
-        xaxis={"title": "Configured corridor distance (km)", "range": [-8, 369], "gridcolor": "#1e293b", "zeroline": False},
-        yaxis={"visible": False, "range": [.55, 1.84]},
+        map={"style": "open-street-map", "center": {"lat": 13.55, "lon": 76.35}, "zoom": 7.1},
         legend={"orientation": "h", "y": 1.08}, dragmode="pan")
     return fig
 
@@ -141,11 +194,8 @@ def _capture_map(page: str, fig: go.Figure) -> None:
             substation = next((s for s in SUBSTATIONS if str(custom[0]).startswith(s + "_")), None)
             if substation:
                 st.session_state["selected_substation"] = substation
-                st.session_state["demo-substation"] = substation
-                st.session_state["demo-feeder"] = str(custom[0])
         elif len(custom) >= 2 and custom[1] == "substation":
             st.session_state["selected_substation"] = str(custom[0])
-            st.session_state["demo-substation"] = str(custom[0])
         elif len(custom) >= 2 and custom[1] == "bus":
             st.session_state["selected_bus"] = int(custom[0])
 
@@ -313,20 +363,19 @@ def _configure_right(page: str, season: str, state, theft_aware: bool, intensity
 
 
 def _scenario_controls(season: str, intensity: float, lines: tuple[int, ...], page: str):
-    with st.expander("Scenario controls", expanded=False):
+    with st.expander("⚙️ Simulation Settings", expanded=False):
         threshold = st.slider("Overload trip threshold (%)", 80, 150, 100, 5, key=f"{page}-threshold")
         depth = st.slider("Maximum cascade depth", 1, 20, 10, key=f"{page}-depth")
         tie = st.checkbox("Disable state-grid tie", key=f"{page}-tie-loss")
         if st.button("Run grid simulation", type="primary", width="stretch", key=f"{page}-run-grid"):
             if not lines and not tie:
-                st.warning("Select at least one transmission line, or disable the tie.")
+                st.info("No transmission lines selected. Select a line on the network map, or disable the state-grid tie to run this scenario.")
             else:
                 try:
                     st.session_state["shared_grid_result"] = _run_cascade(season, lines, depth, threshold,
                         st.session_state.get("grid_theft_aware", False), intensity, tie)
                     st.session_state["grid_run_config"] = {"season": season, "lines": lines, "depth": depth, "threshold": threshold, "tie_loss": tie}
                     st.session_state["timeline_event"] = 0
-                    st.session_state["timeline-step-slider"] = 0
                 except Exception as exc:
                     st.error(f"Simulation could not run: {exc}")
         if st.button("Reset scenario", width="stretch", key=f"{page}-reset"):
@@ -361,7 +410,6 @@ def _scenario_controls(season: str, intensity: float, lines: tuple[int, ...], pa
             events = sequence.line_trip_sequence if sequence else []
             current = int(st.session_state.get("timeline_event", -1))
             st.session_state["timeline_event"] = min(current + 1, len(events) - 1) if events else -1
-            st.session_state["timeline-step-slider"] = st.session_state["timeline_event"]
     return st.session_state.get("shared_grid_result")
 
 
@@ -369,24 +417,24 @@ def _render_result(result: dict[str, Any] | None, state, season: str, lines: tup
                    theft_aware: bool, intensity: float):
     if result:
         sim = result["result"]
-        st.markdown("#### Latest simulator run")
+        st.markdown("#### 📊 Latest Simulation Run")
         cols = st.columns(4)
         cols[0].metric("Actual lines tripped", sim.total_lines_tripped)
         cols[1].metric("Load lost", f"{sim.load_lost_mw:,.1f} MW", f"{sim.load_shed_pct:.1f}%")
         cols[2].metric("Cascade depth", sim.cascade_depth)
         cols[3].metric("Affected buses", len(sim.affected_buses))
-        st.caption(f"P1 cascade simulator · {result['state']} grid state · converged: {sim.converged} · initial lines: {result['lines']} · tie loss: {result.get('tie_loss', False)}")
+        st.caption(f"AC cascade simulator · {result['state'].title()} grid state · converged: {sim.converged} · initial lines: {result['lines']} · tie loss: {result.get('tie_loss', False)}")
         if result.get("gnn"):
             gnn = result["gnn"]
-            st.info(f"Cascade GNN prediction: probability {gnn.get('has_cascade_prob', float('nan')):.2f}; "
-                    f"predicted load loss {gnn.get('load_lost_mw', float('nan')):.1f} MW. This is a model estimate, separate from simulator trips.")
+            st.info(f"⚡ Cascade GNN prediction: probability **{gnn.get('has_cascade_prob', float('nan')):.2f}** | "
+                    f"predicted load loss **{gnn.get('load_lost_mw', float('nan')):.1f} MW** (Rapid surrogate screening estimate)")
         else:
             st.caption("Cascade GNN checkpoint unavailable; simulator results remain available.")
     impact = st.session_state.get("impact_comparison")
     if impact:
         base, aware = impact
         a, b = base["result"], aware["result"]
-        st.markdown("#### Before vs After Theft Impact · same contingency and settings")
+        st.markdown("#### ⚖️ Clean vs Theft-Aware Impact Comparison")
         c = st.columns(4)
         c[0].metric("Baseline trips", a.total_lines_tripped)
         c[1].metric("Theft-aware trips", b.total_lines_tripped, b.total_lines_tripped - a.total_lines_tripped)
@@ -401,7 +449,7 @@ def _render_result(result: dict[str, Any] | None, state, season: str, lines: tup
         if view == "Side-by-side maps":
             left, right = st.columns(2)
             for col, item, label in ((left, base, "Baseline · no suspected hidden load"),
-                                     (right, aware, "Theft-aware · P4 estimate added")):
+                                     (right, aware, "Theft-aware · hidden load added")):
                 with col:
                     st.caption(label)
                     st.plotly_chart(network_map(state.net, mode="Grid resilience", tripped=item["result"].failed_lines,
@@ -413,29 +461,29 @@ def _render_result(result: dict[str, Any] | None, state, season: str, lines: tup
             st.plotly_chart(network_map(state.net, mode="Grid resilience", tripped=item["result"].failed_lines,
                 loading_override=item["result"].final_line_loading, affected_buses=item["result"].affected_buses),
                 key=f"impact-map-{which}", width="stretch")
-        st.caption("The two outputs come from the same selected contingency, season, threshold and depth. Displayed values are simulator results; GNN estimates remain separate.")
-        st.caption(f"Estimated hidden load used in theft-aware state: {aware['hidden_mw']:.3f} MW. "
-                   + ("Derived from the active synthetic P4 feeder energy-balance estimate." if st.session_state.get("shared_theft_result") else "Derived from the existing P4 substation hidden-load artifact."))
+        st.caption("Both evaluations execute identical contingencies under matched seasonal parameters.")
+        st.caption(f"Estimated hidden load applied in theft-aware state: {aware['hidden_mw']:.3f} MW. "
+                   + ("Derived from active synthetic feeder energy-balance calculation." if st.session_state.get("shared_theft_result") else "Derived from pre-computed distribution substation residual model."))
 
 
 def _theft_injection_panel(advanced: bool = True):
-    with st.expander("Synthetic theft demonstration · P4 local pipeline", expanded=False):
+    with st.expander("🔬 Synthetic Theft Injection & Detection Lab", expanded=False):
         cols = st.columns(2)
         stations = list(SUBSTATIONS)
         preferred_sub = st.session_state.get("selected_substation")
-        if "demo-substation" not in st.session_state:
-            st.session_state["demo-substation"] = preferred_sub if preferred_sub in stations else "NELAMANGALA"
-        sub = cols[0].selectbox("Corridor substation", stations, key="demo-substation")
+        current_sub = st.session_state.get("demo-substation", preferred_sub if preferred_sub in stations else "NELAMANGALA")
+        sub = cols[0].selectbox("Corridor substation", stations, index=stations.index(current_sub), key="demo-substation")
         summary = _feeder_summary()
         feeder_choices = summary.loc[summary.node_id.astype(str).str.startswith(sub + "_"), "node_id"].astype(str).tolist() if summary is not None else []
         if not feeder_choices:
             feeder_choices = [f"{sub}_F00"]
         selected_feed = st.session_state.get("selected_feeder")
+        current_feed = st.session_state.get("demo-feeder")
         if selected_feed and selected_feed.startswith(sub + "_"):
-            st.session_state["demo-feeder"] = selected_feed
-        if st.session_state.get("demo-feeder") not in feeder_choices:
-            st.session_state["demo-feeder"] = feeder_choices[0]
-        feeder_id = cols[1].selectbox("Feeder", feeder_choices, key="demo-feeder")
+            current_feed = selected_feed
+        if current_feed not in feeder_choices:
+            current_feed = feeder_choices[0]
+        feeder_id = cols[1].selectbox("Feeder", feeder_choices, index=feeder_choices.index(current_feed), key="demo-feeder")
         theft_type = THEFT_TYPES[st.selectbox("Theft pattern", list(THEFT_TYPES), key="demo-theft-type")]
         if advanced:
             c = st.columns(4)
@@ -457,42 +505,53 @@ def _theft_injection_panel(advanced: bool = True):
                 with st.spinner("Running the local distribution simulator, energy balance and trained theft scoring bundle…"):
                     st.session_state["shared_theft_result"] = _run_theft_scenario(
                         feeder_id, theft_type, intensity, duration, affected, start_day, start_date)
+                    st.session_state["theft_just_injected"] = True
+                    st.rerun()
             except Exception as exc:
                 st.error(f"The local theft workflow could not run: {exc}")
     result = st.session_state.get("shared_theft_result")
     if result:
-        st.markdown(f"**Synthetic demonstration at {result['feeder']}** · {result['type']} · {result['duration']} days")
-        c = st.columns(4)
-        c[0].metric("Feeder input", f"{result['input_mwh']:.2f} MWh")
-        c[1].metric("Metered consumption", f"{result['metered_mwh']:.2f} MWh")
-        c[2].metric("Estimated technical loss", f"{result['technical_mwh']:.2f} MWh")
-        c[3].metric("Estimated unexplained residual", f"{result['residual_mwh']:.2f} MWh")
+        if st.session_state.pop("theft_just_injected", False):
+            st.success(f"✅ Injection succeeded for feeder **{result['feeder']}**! The scenario marker is now active on the corridor map.")
+        st.markdown(f"### 🔬 Injected Scenario: `{result['feeder']}` · {result['type'].replace('_', ' ').title()}")
+        st.caption(f"Substation: **{result['substation']}** · Injected duration: **{result['duration']} days** · Affected consumers: **{result['affected']}**")
+        metrics = (
+            ("Feeder input", f"{result['input_mwh']:.2f} MWh", {}),
+            ("Metered consumption", f"{result['metered_mwh']:.2f} MWh", {}),
+            ("Technical loss", f"{result['technical_mwh']:.2f} MWh", {}),
+            ("Unexplained residual", f"{result['residual_mwh']:.2f} MWh",
+             {"delta": "Suspected hidden load", "delta_color": "inverse"}),
+        )
+        for col, (label, value, options) in zip(st.columns(4), metrics):
+            with col.container(border=True):
+                st.metric(label, value, **options)
         summary = result["summary"]
-        st.write(f"P4 feeder anomaly z-score **{summary['z']:.2f}** · confidence is a model assessment, not proof of theft.")
-        st.caption(f"Detection time: {result['start_timestamp']} · local audit record {result['audit_id']}")
+        st.info(f"📊 Distribution Anomaly Z-Score: **{summary['z']:.2f}** · Detection Time: `{result['start_timestamp']}` · Audit ID: `{result['audit_id'][:12]}`")
         scored = result["scored"]
         if scored["leads"]:
+            st.markdown("**Top Suspected Consumer Meters Ranked by Model Anomaly Score:**")
             table = pd.DataFrame([{"rank": x["rank"], "consumer": x["consumer_ref"], "feeder": x["feeder_id"],
-                                   "score": x["score"], "confidence": x["confidence"], "reasons": ", ".join(r["code"] for r in x["reason_codes"])}
+                                   "score": round(x["score"], 3), "confidence": x["confidence"], "reasons": ", ".join(r["code"] for r in x["reason_codes"])}
                                   for x in scored["leads"][:10]])
             st.dataframe(table, hide_index=True, width="stretch")
-            st.info(scored["leads"][0]["summary"])
-        st.caption("P4 theft ensemble scores and P1 cascade GNN predictions are different models. This injection is synthetic ground truth for the demonstration only; a lead is not a confirmed incident.")
+            st.success(f"**Lead Assessment:** {scored['leads'][0]['summary']}")
+        st.caption("Distribution anomaly scores evaluate consumer smart-meter patterns; this injection is synthetic ground truth for operational demonstration.")
 
 
 def render_simulation(season: str, intensity: float):
     if st.session_state.pop("pending_clear_scenario", False):
         st.session_state["simulation-initial-trips"] = []
-        st.session_state["timeline-step-slider"] = 0
+        st.session_state["timeline_event"] = 0
         st.session_state.pop("selected_line", None)
     saved = st.session_state.pop("pending_saved_scenario", None)
     if saved:
         st.session_state["simulation-initial-trips"] = saved["lines"]
         st.session_state["simulation-depth"] = saved["depth"]
         st.session_state["simulation-threshold"] = saved["threshold"]
-    st.markdown("## Simulation Control Center")
-    st.caption("Experiment with configured corridor contingencies and synthetic distribution events. Every cascade line shown below is an output of the local P1 simulator.")
-    theft_aware = st.toggle("Use existing P4 hidden-load estimate in grid state", value=False, key="grid_theft_aware")
+    st.markdown("## ⚡ Grid Simulation")
+    st.info("Select transmission lines on the map, configure a failure scenario, and run the cascade simulator to see how faults propagate.")
+    theft_aware = st.toggle("🔓 Enable Theft-Aware Mode", value=False, key="grid_theft_aware",
+                            help="Adds estimated hidden load from theft detection to the grid state")
     state = operating_state(season, theft_aware, intensity)
     feeders = _feeder_summary()
     status = st.columns([1, 1, 1, 2])
@@ -500,20 +559,28 @@ def render_simulation(season: str, intensity: float):
     status[1].metric("Hydro dispatch", f"{state.hydro.base_mw:.0f} MW")
     status[2].metric("State-grid import", f"{state.tie_mw:.0f} MW")
     status[3].caption(f"{'Theft-aware' if state.hidden_mw else 'Baseline'} · estimated hidden load {state.hidden_mw:.1f} MW")
+    _theft_injection_panel()
     map_col, panel_col = st.columns([4.3, 1.35], gap="medium")
     with map_col:
-        map_mode = st.radio("Network layer", ["Grid resilience", "Loss & Theft", "Combined"], horizontal=True,
-                            key="simulation-map-mode")
+        map_mode = st.radio("Network layer", ["Grid resilience", "Loss & Theft", "Combined"],
+                            index=1, horizontal=True, key="simulation-map-mode")
         st.markdown("### Corridor network · select a circuit marker")
         result = st.session_state.get("shared_grid_result")
         _map_result("simulation", state, map_mode, result, feeders)
-        st.caption("Blue = monitored line · amber = ≥70% loading · pink dashed = failed/out of service · purple = configured substations · feeder points = existing P4 inspection leads. Pan, zoom, and select a line or feeder.")
+        st.markdown(
+            '<div style="font-size:0.78rem;color:#94a3b8;display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;">'
+            '<span><span style="color:#22c55e;">●</span> Normal</span>'
+            '<span><span style="color:#f59e0b;">●</span> High load</span>'
+            '<span><span style="color:#fb7185;">◌</span> Tripped / red</span>'
+            '<span><span style="color:#a78bfa;">■</span> Substation</span>'
+            '<span><span style="color:#f59e0b;">●</span> Feeder lead</span>'
+            '</div>', unsafe_allow_html=True)
     with panel_col:
         selection = _configure_right("simulation", season, state, theft_aware, intensity)
         result = _scenario_controls(season, intensity, selection["lines"], "simulation")
     config = st.session_state.get("grid_run_config", {})
     _render_result(result, state, season, selection["lines"], config.get("depth", 10), config.get("threshold", 100), theft_aware, intensity)
-    with st.expander("Simulation timeline · actual P1 simulator event sequence", expanded=bool(result)):
+    with st.expander("📋 Cascade Event Sequence (Relay Trips)", expanded=bool(result)):
         sequence = result["result"].line_trip_sequence if result else []
         if sequence:
             table = pd.DataFrame(sequence)
@@ -524,13 +591,12 @@ def render_simulation(season: str, intensity: float):
             st.session_state["selected_line"] = int(step["line_idx"])
             st.info(f"Step {step['iteration']} · line {step['line_idx']} {step['name']} · {step['reason']} · loading {step.get('loading_pct') or 'not applicable'}")
         else:
-            st.caption("Run a grid simulation to populate the event sequence.")
-    _theft_injection_panel()
+            st.caption("Run a grid simulation above to populate the chronological trip sequence.")
 
 
 def render_manager(season: str):
     st.markdown("## Manager Dashboard")
-    st.caption("Operational view of local model outputs and corridor status. Theft scores are inspection leads; simulated demonstrations are labelled separately.")
+    st.caption("Executive overview of transmission corridor reliability, distribution feeder anomaly screening, and inspection dispatch.")
     state = operating_state(season, False, 1.0)
     feeders = _feeder_summary()
     leads = _theft_leads_frame()
@@ -554,7 +620,7 @@ def render_manager(season: str):
         _map_result("manager", state, mode, result, filtered)
         st.caption("The corridor uses configured distance coordinates. Feeder leads are shown at their configured parent substation as diagrammatic markers.")
     with side_col:
-        with st.expander("Location details", expanded=True):
+        with st.expander("📍 Location Details & Asset State", expanded=True):
             feeder = st.session_state.get("selected_feeder")
             if feeder:
                 st.write(f"**{feeder}**")
@@ -577,7 +643,7 @@ def render_manager(season: str):
                 pred = st.session_state["shared_grid_result"].get("gnn")
                 if pred:
                     st.caption(f"Cascade GNN probability: {pred.get('has_cascade_prob', float('nan')):.2f} (model estimate)")
-        with st.expander("Incident review", expanded=False):
+        with st.expander("🔎 Field Inspection Lead Review", expanded=False):
             search = st.text_input("Search existing leads", key="manager-incident-search")
             severity = st.selectbox("Filter by lead score", ["All", "High ≥0.7", "Medium 0.4–0.69", "Lower <0.4"], key="manager-severity")
             if not leads.empty:
@@ -600,9 +666,9 @@ def render_manager(season: str):
                 pick = st.selectbox("Review lead", records[label_col].astype(str).tolist() if label_col in records else [], key="manager-review-pick")
                 if pick:
                     col1, col2 = st.columns(2)
-                    if col1.button("Acknowledge", key="manager-ack"):
+                    if col1.button("✅ Acknowledge", key="manager-ack"):
                         _record_manager_review(pick, records, "acknowledged")
-                    if col2.button("Mark reviewed", key="manager-reviewed"):
+                    if col2.button("📝 Mark Reviewed", key="manager-reviewed"):
                         _record_manager_review(pick, records, "reviewed")
                     st.caption(st.session_state.get("reviewed_leads", {}).get(pick, "Not reviewed"))
             else:
@@ -618,7 +684,7 @@ def render_manager(season: str):
             _record_manager_review(current["audit_id"], None, "acknowledged", synthetic=True)
         if y.button("Mark synthetic scenario reviewed", key="manager-reviewed-demo"):
             _record_manager_review(current["audit_id"], None, "reviewed", synthetic=True)
-    with st.expander("Monitoring analytics", expanded=False):
+    with st.expander("📈 Feeder Anomaly Analytics", expanded=False):
         if feeders is not None and "z" in feeders:
             st.markdown("**Feeder anomaly z-score (existing energy-balance output)**")
             ordered = feeders.sort_values("z", ascending=False).head(15)
