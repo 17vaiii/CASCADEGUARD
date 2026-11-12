@@ -62,6 +62,20 @@ def imports_available(python: Path, modules: tuple[str, ...]) -> bool:
     return not missing_modules(python, modules)
 
 
+def dashboard_versions_supported(python: Path) -> bool:
+    """Check versions as well as imports; old dashboard packages can import but fail at runtime."""
+    code = (
+        "from importlib.metadata import version; import sys; "
+        "parts=lambda name: tuple(int(p) for p in version(name).split('.')[:2]); "
+        "ok=(parts('streamlit') >= (1, 51) and parts('streamlit') < (2, 0) "
+        "and parts('plotly') >= (5, 24) and parts('plotly') < (7, 0)); "
+        "sys.exit(0 if ok else 1)"
+    )
+    result = subprocess.run([str(python), "-c", code], capture_output=True, text=True,
+                            startupinfo=hidden_startup())
+    return result.returncode == 0
+
+
 def missing_modules(python: Path, modules: tuple[str, ...]) -> list[str]:
     code = "import importlib.util,sys; missing=[m for m in sys.argv[1:] if importlib.util.find_spec(m) is None]; print('\\n'.join(missing)); sys.exit(bool(missing))"
     result = subprocess.run([str(python), "-c", code, *modules], capture_output=True, text=True,
@@ -96,7 +110,8 @@ def prepare_python(status) -> Path:
     if not imports_available(venv_python, CORE_MODULES):
         status("Installing the project’s declared local dependencies (first launch may take a while)…")
         run_pip(venv_python, ["-r", str(root / "requirements.txt"), "-r", str(root / "requirements-p5.txt")], status)
-    elif not imports_available(venv_python, DASHBOARD_MODULES):
+    elif (not imports_available(venv_python, DASHBOARD_MODULES)
+          or not dashboard_versions_supported(venv_python)):
         status("Installing the dashboard packages into the project environment…")
         run_pip(venv_python, ["-r", str(root / "requirements-p5.txt")], status)
 

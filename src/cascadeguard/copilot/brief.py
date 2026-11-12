@@ -148,8 +148,14 @@ def _llm_available(cfg: dict[str, Any]) -> bool:
 
 def _llm_brief(facts: dict[str, Any], passages: list[Passage], cfg: dict[str, Any], client: Any = None) -> tuple[str | None, str | None]:
     """Returns (text, warning). ``client`` may be injected for tests."""
-    import anthropic
-    client = client or anthropic.Anthropic()
+    try:
+        import anthropic
+    except ImportError:
+        anthropic = None
+    if client is None:
+        if anthropic is None:
+            return None, "Anthropic SDK is not installed; extractive brief used."
+        client = anthropic.Anthropic()
     sources = "\n".join(f'<passage n="{p.n}" title="{p.title} - {p.section}">{p.text}</passage>' for p in passages)
     user = f"<facts>\n{json.dumps(facts, indent=1)}\n</facts>\n<sources>\n{sources}\n</sources>\nWrite the incident brief."
     try:
@@ -159,16 +165,19 @@ def _llm_brief(facts: dict[str, Any], passages: list[Passage], cfg: dict[str, An
             output_config={"effort": cfg.get("effort", "medium")},
             betas=["server-side-fallback-2026-07-01"], fallbacks="default",
         )
-    except anthropic.AuthenticationError:
-        return None, "LLM unavailable (authentication failed); extractive brief used."
-    except anthropic.PermissionDeniedError:
-        return None, "LLM unavailable (permission denied); extractive brief used."
-    except anthropic.RateLimitError:
-        return None, "LLM rate-limited; extractive brief used."
-    except anthropic.APIStatusError as exc:
-        return None, f"LLM API error {exc.status_code}; extractive brief used."
-    except anthropic.APIConnectionError:
-        return None, "LLM unreachable (connection error); extractive brief used."
+    except Exception as exc:
+        if anthropic is not None:
+            if isinstance(exc, anthropic.AuthenticationError):
+                return None, "LLM unavailable (authentication failed); extractive brief used."
+            if isinstance(exc, anthropic.PermissionDeniedError):
+                return None, "LLM unavailable (permission denied); extractive brief used."
+            if isinstance(exc, anthropic.RateLimitError):
+                return None, "LLM rate-limited; extractive brief used."
+            if isinstance(exc, anthropic.APIStatusError):
+                return None, f"LLM API error {exc.status_code}; extractive brief used."
+            if isinstance(exc, anthropic.APIConnectionError):
+                return None, "LLM unreachable (connection error); extractive brief used."
+        return None, f"LLM unavailable ({type(exc).__name__}); extractive brief used."
     if resp.stop_reason == "refusal":
         return None, "LLM declined the request; extractive brief used."
     text = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text").strip()

@@ -2,7 +2,9 @@
 # P5 optimisation, copilot and dashboard dependencies (on top of requirements.txt).
 # Install with: python -m pip install -r requirements-p5.txt
 ortools>=9.10,<10
-streamlit>=1.38,<2
-plotly>=5.22,<7
+# The dashboard uses the width="stretch" chart API introduced in Streamlit 1.51.
+streamlit>=1.51,<2
+# Scattermap / MapLibre traces used by the geographic dashboard map were added in 5.24.
+plotly>=5.24,<7
 # Optional, only for dashboard/browser_walkthrough.py (demo recording):
 #   python -m pip install playwright && python -m playwright install chromium

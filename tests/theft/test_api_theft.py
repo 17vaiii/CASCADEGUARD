@@ -12,6 +12,23 @@ pytestmark = pytest.mark.skipif(not BUNDLE_PATH.exists(),
                                 reason="run `python -m cascadeguard.theft.pipeline` to train the P4 bundle")
 
 
+def test_theft_score_accepts_minimum_two_days_of_hourly_reads():
+    from datetime import datetime, timedelta, timezone
+
+    from cascadeguard.theft.service import score_consumers
+
+    start = datetime(2025, 4, 1, tzinfo=timezone.utc)
+    readings = []
+    for i in range(48):
+        timestamp = start + timedelta(hours=i)
+        readings.append({"timestamp": timestamp.isoformat(), "consumer_id": "SMOKE_C001",
+                         "feeder_id": "PEENYA_F00", "consumer_type": "residential",
+                         "metered_kwh": 0.42 + (0.08 if 18 <= timestamp.hour <= 22 else 0)})
+    result = score_consumers({"readings": readings, "history_end": "2025-04-02T00:00:00Z", "top_k": 5})
+    assert result["n_scored"] == 1
+    assert len(result["leads"]) == 1
+
+
 def test_theft_score_route_returns_audited_leads(ds, tmp_path, monkeypatch):
     import cascadeguard.api.audit as audit
     from cascadeguard.api.main import app

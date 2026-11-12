@@ -41,7 +41,7 @@ def _rolling_mean(daily: np.ndarray, window: int) -> np.ndarray:
     s = cs[:, window:] - cs[:, :-window]
     n = cn[:, window:] - cn[:, :-window]
     with np.errstate(invalid="ignore", divide="ignore"):
-        return np.where(n >= max(2, window // 2), s / np.maximum(n, 1), np.nan)
+        return np.where(n >= max(1, window // 2), s / np.maximum(n, 1), np.nan)
 
 
 def _max_run(mask: np.ndarray) -> np.ndarray:
@@ -98,9 +98,17 @@ def consumer_features(reads: np.ndarray, timestamps: pd.DatetimeIndex, history_e
             daily = x.reshape(n_c, n_days, per_day)
             daily_valid = (~np.isnan(daily)).sum(axis=2)
             daily_mean = np.where(daily_valid > per_day // 2, np.nanmean(daily, axis=2), np.nan)
-        roll = _rolling_mean(daily_mean, int(cfg["rolling_days"]))
-        first_recent = max(0, hist_days - int(cfg["rolling_days"]) + 1)
-        f["f_min7_ratio"] = np.nanmin(roll[:, first_recent:], axis=1) / safe_hist
+        # A live API request may contain only the minimum two days (one reference,
+        # one scoring day). Use the longest window that fits the scoring period.
+        rolling_days = min(int(cfg["rolling_days"]), max(1, n_days - hist_days))
+        roll = _rolling_mean(daily_mean, rolling_days)
+        first_recent = max(0, hist_days - rolling_days + 1)
+        recent_roll = roll[:, first_recent:]
+        if recent_roll.shape[1] == 0:
+            recent_roll = daily_mean[:, hist_days:]
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning, message="All-NaN slice encountered")
+            f["f_min7_ratio"] = np.nanmin(recent_roll, axis=1) / safe_hist
 
         # Best single change-point drop over the scoring window (relative to the level before it).
         cs = np.nancumsum(daily_mean, axis=1)

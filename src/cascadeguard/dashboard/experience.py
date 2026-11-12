@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+import math
 from typing import Any
 
 import pandas as pd
@@ -11,6 +12,9 @@ import streamlit as st
 
 from cascadeguard.dashboard import data
 from cascadeguard.mitigation.network import Event, build_state
+
+_MAP_TRACE = getattr(go, "Scattermap", None) or go.Scattermapbox
+_MAP_LAYOUT_KEY = "map" if hasattr(go, "Scattermap") else "mapbox"
 
 SUBSTATIONS = {"SHARAVATHI": 0, "SHIMOGA": 110, "SIRA_KBCROSS": 215, "NELAMANGALA": 320, "PEENYA": 361}
 # Town/site coordinates used to place the configured corridor on a geographic basemap.
@@ -49,11 +53,27 @@ def _corridor_coords(km: float) -> tuple[float, float]:
     return CORRIDOR_COORDS[anchors[-1][0]]
 
 
+def _parallel_corridor_coords(km: float, km_from: float, km_to: float, offset_km: float) -> tuple[float, float]:
+    """Offset a circuit slightly so the two configured circuits remain selectable on the map."""
+    lat, lon = _corridor_coords(km)
+    start_lat, start_lon = _corridor_coords(km_from)
+    end_lat, end_lon = _corridor_coords(km_to)
+    mid_lat = (start_lat + end_lat) / 2
+    north_km = (end_lat - start_lat) * 111.0
+    east_km = (end_lon - start_lon) * 111.0 * max(0.2, math.cos(math.radians(mid_lat)))
+    length = max((east_km * east_km + north_km * north_km) ** 0.5, 1e-9)
+    offset_east = -north_km / length * offset_km
+    offset_north = east_km / length * offset_km
+    lat += offset_north / 111.0
+    lon += offset_east / (111.0 * max(0.2, math.cos(math.radians(lat))))
+    return lat, lon
+
+
 def network_map(net, *, mode: str, tripped: list[int] | None = None, selected_line: int | None = None,
                 feeder_rows: pd.DataFrame | None = None, selected_feeder: str | None = None,
                 demo_feeder: str | None = None, loading_override: dict[int, float] | None = None,
                 affected_buses: list[int] | None = None) -> go.Figure:
-    """Distance schematic built only from configured corridor topology and feeder records."""
+    """Geographic display of the configured corridor topology and feeder records."""
     frame = data.corridor_frame(net)
     failed = set(int(x) for x in (tripped or []))
     neighbors: set[int] = set()
@@ -75,16 +95,18 @@ def network_map(net, *, mode: str, tripped: list[int] | None = None, selected_li
             if mode == "Loss & Theft":
                 color = "#334155"
             width = 4.5 if line_id == selected_line else 2.4
-            start_lat, start_lon = _corridor_coords(float(row.km_from))
-            end_lat, end_lon = _corridor_coords(float(row.km_to))
-            fig.add_trace(go.Scattermap(
+            circuit_offset = 0.35 if circuit == "A" else -0.35
+            start_lat, start_lon = _parallel_corridor_coords(float(row.km_from), float(row.km_from), float(row.km_to), circuit_offset)
+            end_lat, end_lon = _parallel_corridor_coords(float(row.km_to), float(row.km_from), float(row.km_to), circuit_offset)
+            fig.add_trace(_MAP_TRACE(
                 lat=[start_lat, end_lat], lon=[start_lon, end_lon], mode="lines",
                 line={"color": color, "width": width},
                 name=f"{line_id} · {circuit}", showlegend=False,
                 customdata=[[line_id, "line"], [line_id, "line"]],
                 hovertemplate=f"{row.name} · circuit {circuit}<br>line {line_id}<br>Loading: {actual_load if actual_load is not None else 'unavailable'}%<extra>Click line marker below to select</extra>"))
-            marker_lat, marker_lon = _corridor_coords(float(row.km_from + row.km_to) / 2)
-            fig.add_trace(go.Scattermap(
+            marker_lat, marker_lon = _parallel_corridor_coords(float(row.km_from + row.km_to) / 2,
+                                                                float(row.km_from), float(row.km_to), circuit_offset)
+            fig.add_trace(_MAP_TRACE(
                 lat=[marker_lat], lon=[marker_lon], mode="markers",
                 marker={"size": 13 if line_id == selected_line else 9, "color": color, "opacity": .82},
                 customdata=[[line_id, "line"]], name=f"Line {line_id}", showlegend=False,
@@ -92,27 +114,26 @@ def network_map(net, *, mode: str, tripped: list[int] | None = None, selected_li
 
     affected = set(int(x) for x in (affected_buses or []))
     bus_km = net.get("bus_km", {})
+    bx, by, bc, bd = [], [], [], []
     if bus_km:
-        bx, by, bc, bd = [], [], [], []
         for bus, km in bus_km.items():
             lat, lon = _corridor_coords(float(km))
             bx.append(lat); by.append(lon)
             bc.append("#fb7185" if int(bus) in affected else "#64748b")
             bd.append([int(bus), "bus"])
-    fig.add_trace(go.Scattermap(lat=bx, lon=by, mode="markers", marker={"size": [10 if b in affected else 5 for b in [x[0] for x in bd]],
+    fig.add_trace(_MAP_TRACE(lat=bx, lon=by, mode="markers", marker={"size": [10 if b in affected else 5 for b in [x[0] for x in bd]],
             "color": bc}, customdata=bd, name="Buses",
             hovertemplate="Bus %{customdata[0]}<extra></extra>"))
 
     station_names = list(SUBSTATIONS)
-    fig.add_trace(go.Scattermap(lat=[CORRIDOR_COORDS[name][0] for name in station_names],
+    fig.add_trace(_MAP_TRACE(lat=[CORRIDOR_COORDS[name][0] for name in station_names],
         lon=[CORRIDOR_COORDS[name][1] for name in station_names], mode="markers+text",
         text=station_names, textposition="top center", textfont={"size": 11, "color": "#e2e8f0"},
         marker={"size": 15, "color": "#a78bfa", "symbol": "square"},
-        customdata=[[name, "substation"] for name in station_names], name="Corridor substations",
-        hovertemplate="%{text}<br>%{x} km from Sharavathi<extra></extra>"))
+        customdata=[[name, "substation", SUBSTATIONS[name]] for name in station_names], name="Corridor substations",
+        hovertemplate="%{text}<br>%{customdata[2]} km from Sharavathi<extra></extra>"))
 
     if feeder_rows is not None and not feeder_rows.empty and mode in ("Loss & Theft", "Combined"):
-        import math
         visible = feeder_rows.copy()
         if selected_feeder:
             visible = visible[visible.node_id.astype(str) == selected_feeder]
@@ -148,12 +169,12 @@ def network_map(net, *, mode: str, tripped: list[int] | None = None, selected_li
                 colors.append("#fb7185" if bool(getattr(row, "flagged", False)) else "#f59e0b")
 
         if line_lats:
-            fig.add_trace(go.Scattermap(lat=line_lats, lon=line_lons, mode="lines",
+            fig.add_trace(_MAP_TRACE(lat=line_lats, lon=line_lons, mode="lines",
                 line={"color": "rgba(148, 163, 184, 0.35)", "width": 1.2},
                 name="Feeder distribution ties", showlegend=False, hoverinfo="skip"))
 
         if xs:
-            fig.add_trace(go.Scattermap(lat=xs, lon=ys, mode="markers+text", text=texts, textposition="top center",
+            fig.add_trace(_MAP_TRACE(lat=xs, lon=ys, mode="markers+text", text=texts, textposition="top center",
                 textfont={"size": 9, "color": "#cbd5e1"}, marker={"size": sizes, "color": colors, "opacity": .9},
                 customdata=[[fid, "feeder"] for fid in ids], name="Feeder leads",
                 hovertemplate="<b>%{text}</b><br>Loss anomaly lead<br>Click to inspect details<extra></extra>"))
@@ -163,7 +184,7 @@ def network_map(net, *, mode: str, tripped: list[int] | None = None, selected_li
         if sub:
             demo_lat = CORRIDOR_COORDS[sub][0] + 0.085
             demo_lon = CORRIDOR_COORDS[sub][1]
-            fig.add_trace(go.Scattermap(lat=[demo_lat], lon=[demo_lon], mode="markers+text",
+            fig.add_trace(_MAP_TRACE(lat=[demo_lat], lon=[demo_lon], mode="markers+text",
                 text=["SYNTHETIC · " + demo_feeder],
                 textposition="top center", textfont={"size": 10, "color": "#c4b5fd"},
                 marker={"size": 16, "color": "#8b5cf6", "symbol": "diamond"},
@@ -174,7 +195,7 @@ def network_map(net, *, mode: str, tripped: list[int] | None = None, selected_li
         paper_bgcolor="#0b1220", plot_bgcolor="#0b1220",
         font={"color": "#cbd5e1", "family": "'Plus Jakarta Sans', 'Segoe UI', sans-serif"},
         hoverlabel={"bgcolor": "#111c2e", "font": {"color": "#f8fafc"}},
-        map={"style": "open-street-map", "center": {"lat": 13.55, "lon": 76.35}, "zoom": 7.1},
+        **{_MAP_LAYOUT_KEY: {"style": "open-street-map", "center": {"lat": 13.55, "lon": 76.35}, "zoom": 7.1}},
         legend={"orientation": "h", "y": 1.08}, dragmode="pan")
     return fig
 
@@ -194,8 +215,13 @@ def _capture_map(page: str, fig: go.Figure) -> None:
             substation = next((s for s in SUBSTATIONS if str(custom[0]).startswith(s + "_")), None)
             if substation:
                 st.session_state["selected_substation"] = substation
+                # Keep the injection form in sync even after its widgets have been initialized.
+                st.session_state["demo-substation"] = substation
+                st.session_state["demo-feeder"] = str(custom[0])
         elif len(custom) >= 2 and custom[1] == "substation":
             st.session_state["selected_substation"] = str(custom[0])
+            st.session_state["demo-substation"] = str(custom[0])
+            st.session_state.pop("demo-feeder", None)
         elif len(custom) >= 2 and custom[1] == "bus":
             st.session_state["selected_bus"] = int(custom[0])
 
@@ -367,7 +393,7 @@ def _scenario_controls(season: str, intensity: float, lines: tuple[int, ...], pa
         threshold = st.slider("Overload trip threshold (%)", 80, 150, 100, 5, key=f"{page}-threshold")
         depth = st.slider("Maximum cascade depth", 1, 20, 10, key=f"{page}-depth")
         tie = st.checkbox("Disable state-grid tie", key=f"{page}-tie-loss")
-        if st.button("Run grid simulation", type="primary", width="stretch", key=f"{page}-run-grid"):
+        if st.button("Simulate", type="primary", width="stretch", key=f"{page}-run-grid"):
             if not lines and not tie:
                 st.info("No transmission lines selected. Select a line on the network map, or disable the state-grid tie to run this scenario.")
             else:
@@ -376,6 +402,7 @@ def _scenario_controls(season: str, intensity: float, lines: tuple[int, ...], pa
                         st.session_state.get("grid_theft_aware", False), intensity, tie)
                     st.session_state["grid_run_config"] = {"season": season, "lines": lines, "depth": depth, "threshold": threshold, "tie_loss": tie}
                     st.session_state["timeline_event"] = 0
+                    st.session_state["timeline-step-slider"] = 0
                 except Exception as exc:
                     st.error(f"Simulation could not run: {exc}")
         if st.button("Reset scenario", width="stretch", key=f"{page}-reset"):
@@ -410,6 +437,7 @@ def _scenario_controls(season: str, intensity: float, lines: tuple[int, ...], pa
             events = sequence.line_trip_sequence if sequence else []
             current = int(st.session_state.get("timeline_event", -1))
             st.session_state["timeline_event"] = min(current + 1, len(events) - 1) if events else -1
+            st.session_state["timeline-step-slider"] = st.session_state["timeline_event"]
     return st.session_state.get("shared_grid_result")
 
 
@@ -542,6 +570,7 @@ def render_simulation(season: str, intensity: float):
     if st.session_state.pop("pending_clear_scenario", False):
         st.session_state["simulation-initial-trips"] = []
         st.session_state["timeline_event"] = 0
+        st.session_state["timeline-step-slider"] = 0
         st.session_state.pop("selected_line", None)
     saved = st.session_state.pop("pending_saved_scenario", None)
     if saved:
@@ -559,17 +588,16 @@ def render_simulation(season: str, intensity: float):
     status[1].metric("Hydro dispatch", f"{state.hydro.base_mw:.0f} MW")
     status[2].metric("State-grid import", f"{state.tie_mw:.0f} MW")
     status[3].caption(f"{'Theft-aware' if state.hidden_mw else 'Baseline'} · estimated hidden load {state.hidden_mw:.1f} MW")
-    _theft_injection_panel()
     map_col, panel_col = st.columns([4.3, 1.35], gap="medium")
     with map_col:
         map_mode = st.radio("Network layer", ["Grid resilience", "Loss & Theft", "Combined"],
-                            index=1, horizontal=True, key="simulation-map-mode")
+                            index=0, horizontal=True, key="simulation-map-mode")
         st.markdown("### Corridor network · select a circuit marker")
         result = st.session_state.get("shared_grid_result")
         _map_result("simulation", state, map_mode, result, feeders)
         st.markdown(
             '<div style="font-size:0.78rem;color:#94a3b8;display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;">'
-            '<span><span style="color:#22c55e;">●</span> Normal</span>'
+            '<span><span style="color:#38bdf8;">●</span> Normal</span>'
             '<span><span style="color:#f59e0b;">●</span> High load</span>'
             '<span><span style="color:#fb7185;">◌</span> Tripped / red</span>'
             '<span><span style="color:#a78bfa;">■</span> Substation</span>'
@@ -578,6 +606,9 @@ def render_simulation(season: str, intensity: float):
     with panel_col:
         selection = _configure_right("simulation", season, state, theft_aware, intensity)
         result = _scenario_controls(season, intensity, selection["lines"], "simulation")
+    # Render form widgets after map selection is consumed so map clicks can safely
+    # update their session-state defaults on the same rerun.
+    _theft_injection_panel()
     config = st.session_state.get("grid_run_config", {})
     _render_result(result, state, season, selection["lines"], config.get("depth", 10), config.get("threshold", 100), theft_aware, intensity)
     with st.expander("📋 Cascade Event Sequence (Relay Trips)", expanded=bool(result)):
@@ -585,7 +616,10 @@ def render_simulation(season: str, intensity: float):
         if sequence:
             table = pd.DataFrame(sequence)
             st.dataframe(table, hide_index=True, width="stretch")
-            idx = st.slider("Highlight event step", 0, len(sequence) - 1, min(int(st.session_state.get("timeline_event", 0)), len(sequence)-1), key="timeline-step-slider")
+            max_step = len(sequence) - 1
+            slider_step = int(st.session_state.get("timeline-step-slider", st.session_state.get("timeline_event", 0)))
+            st.session_state["timeline-step-slider"] = min(max(slider_step, 0), max_step)
+            idx = st.slider("Highlight event step", 0, max_step, key="timeline-step-slider")
             st.session_state["timeline_event"] = idx
             step = sequence[idx]
             st.session_state["selected_line"] = int(step["line_idx"])

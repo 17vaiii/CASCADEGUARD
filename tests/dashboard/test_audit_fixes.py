@@ -139,13 +139,17 @@ def test_fallback_demo_data_is_not_gitignored():
     assert subprocess.run(["git", "check-ignore", "-q", "data/processed/theft/dataset/arrays.npz"], cwd=REPO_ROOT).returncode == 0
 
 
-def test_dashboard_shows_path_and_clean_label():
+def test_dashboard_runs_grid_simulation_from_controls():
     from streamlit.testing.v1 import AppTest
     at = AppTest.from_file(str(REPO_ROOT / "src" / "cascadeguard" / "dashboard" / "app.py"), default_timeout=300)
     at.run()
-    sim_btn = [b for b in at.button if b.label == "Simulate"][0]
+    trips = next(x for x in at.multiselect if x.label == "Initial line trips (N-k)")
+    trips.set_value([0]).run()
+    sim_btn = next(b for b in at.button if b.key == "simulation-run-grid")
     sim_btn.click().run()
     assert not at.exception
     text = " ".join(m.value for m in at.markdown)
-    assert "Cascade path" in text and "Critical lines" in text
-    assert "np.int64" not in text and "N-1 [0]" in text
+    assert "Latest Simulation Run" in text
+    assert at.session_state["grid_run_config"]["lines"] == (0,)
+    assert at.session_state["shared_grid_result"] is not None
+    assert "np.int64" not in text
